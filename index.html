@@ -58,6 +58,89 @@
       mask-image: radial-gradient(ellipse at 30% 20%, black 0%, transparent 75%);
     }
 
+    /* ---- Application-building background animation ----
+       Strictly decorative: fixed, z-index 1 (below header z-index 20 and
+       dashboard z-index 5), pointer-events none, low opacity. Dimmed
+       further while any panel is open so it never competes with the
+       foreground UI. */
+    .bg-app-build {
+      position: fixed;
+      inset: 0;
+      z-index: 1;
+      pointer-events: none;
+      opacity: 0.22;
+      transition: opacity 0.4s ease;
+    }
+
+    .bg-app-build.dimmed { opacity: 0.05; }
+
+    .connector-svg {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+    }
+
+    .connector-svg path {
+      fill: none;
+      stroke: var(--accent);
+      stroke-width: 1;
+      stroke-dasharray: 6 10;
+      opacity: 0.5;
+      animation: dash-flow 14s linear infinite;
+    }
+
+    @keyframes dash-flow {
+      to { stroke-dashoffset: -400; }
+    }
+
+    .code-zone {
+      position: absolute;
+      width: 230px;
+      font-family: var(--mono);
+      font-size: 0.66rem;
+      line-height: 1.55;
+      color: rgba(148, 197, 255, 0.55);
+      white-space: pre;
+    }
+
+    .code-zone .zone-label {
+      color: var(--accent);
+      font-weight: 500;
+      margin-bottom: 4px;
+      display: block;
+      letter-spacing: 0.04em;
+    }
+
+    .code-zone .zone-cursor {
+      display: inline-block;
+      width: 6px;
+      height: 11px;
+      background: var(--accent);
+      margin-left: 2px;
+      vertical-align: text-bottom;
+      animation: cursor-blink 1s steps(1) infinite;
+    }
+
+    @keyframes cursor-blink {
+      50% { opacity: 0; }
+    }
+
+    .zone-frontend { top: 8%; left: 3%; }
+    .zone-backend { top: 8%; right: 3%; }
+    .zone-database { top: 42%; right: 2%; }
+    .zone-testing { bottom: 20%; left: 3%; }
+    .zone-devops { bottom: 4%; left: 32%; text-align: left; }
+    .zone-deployment { bottom: 20%; right: 3%; }
+
+    @media (max-width: 1100px) {
+      .zone-frontend, .zone-testing, .zone-devops { display: none; }
+    }
+
+    @media (max-width: 700px) {
+      .bg-app-build { display: none; }
+    }
+
     /* NAVBAR */
     header {
       position: relative;
@@ -459,6 +542,26 @@
       color: var(--text-primary);
     }
 
+    .skill-vertical-item.clickable { cursor: pointer; }
+
+    .skill-count-badge {
+      margin-left: auto;
+      font-family: var(--mono);
+      font-size: 0.68rem;
+      color: var(--accent);
+      background: rgba(59, 130, 246, 0.1);
+      padding: 3px 9px;
+      border-radius: 999px;
+      flex-shrink: 0;
+    }
+
+    .tile-meta {
+      font-family: var(--mono);
+      font-size: 0.68rem;
+      color: var(--text-soft);
+      margin-top: 4px;
+    }
+
     .skill-pill {
       font-family: var(--mono);
       font-size: 0.82rem;
@@ -713,6 +816,42 @@
 <body>
 <div class="bg-grid"></div>
 
+<div class="bg-app-build" id="bgAppBuild">
+  <svg class="connector-svg" preserveAspectRatio="none">
+    <path d="M 18% 16% Q 40% 10%, 78% 16%" />
+    <path d="M 78% 16% Q 82% 40%, 80% 48%" />
+    <path d="M 80% 48% Q 60% 60%, 40% 78%" />
+    <path d="M 40% 78% Q 55% 88%, 34% 92%" />
+    <path d="M 34% 92% Q 60% 95%, 78% 78%" />
+    <path d="M 18% 16% Q 10% 55%, 18% 78%" />
+  </svg>
+
+  <div class="code-zone zone-frontend">
+    <span class="zone-label">// frontend / App.jsx</span>
+    <span class="zone-text"></span>
+  </div>
+  <div class="code-zone zone-backend">
+    <span class="zone-label">// backend / OrderController.java</span>
+    <span class="zone-text"></span>
+  </div>
+  <div class="code-zone zone-database">
+    <span class="zone-label">-- database / query.sql</span>
+    <span class="zone-text"></span>
+  </div>
+  <div class="code-zone zone-testing">
+    <span class="zone-label">// test / OrderServiceTest.java</span>
+    <span class="zone-text"></span>
+  </div>
+  <div class="code-zone zone-devops">
+    <span class="zone-label">$ devops / pipeline</span>
+    <span class="zone-text"></span>
+  </div>
+  <div class="code-zone zone-deployment">
+    <span class="zone-label">$ deploy / status</span>
+    <span class="zone-text"></span>
+  </div>
+</div>
+
 <header role="banner">
   <nav aria-label="Main navigation">
     <div class="logo">Karan<span class="dot">.</span>Jha</div>
@@ -720,9 +859,9 @@
       <ul class="nav-links" id="navLinks">
         <li><button class="nav-btn" data-panel="skills">Skills</button></li>
         <li><button class="nav-btn" data-panel="projects">Projects</button></li>
-        <li><button class="nav-btn" data-panel="education">Education</button></li>
         <li><button class="nav-btn" data-panel="contact">Contact</button></li>
         <li><a class="nav-resume" href="resume.pdf" download>Resume</a></li>
+        <li><button class="nav-btn" data-panel="education">Education</button></li>
       </ul>
       <div class="hamburger" id="hamburger"><span></span><span></span><span></span></div>
     </div>
@@ -736,16 +875,17 @@
     <p class="role-line">Java Backend Developer</p>
     <p class="tagline">Building scalable backend solutions</p>
     <p class="about-blurb">
-      CSE graduate (2026) focused on backend engineering — designing RESTful
-      APIs, clean service architecture, and reliable data layers with Java
-      and Spring Boot.
+      Backend-focused CSE graduate building secure, scalable REST APIs with
+      Java and Spring Boot — JWT auth, RBAC, and transaction management
+      across production-ready projects. Available immediately for a
+      Backend Developer role.
     </p>
     <div class="cta-group">
       <button class="btn btn-primary" data-panel="projects">View Projects</button>
       <a href="resume.pdf" class="btn btn-outline" download>Download Resume</a>
     </div>
     <p class="quick-stack">
-      <span>Java</span><span>Spring Boot</span><span>REST APIs</span><span>MySQL</span><span>Docker</span>
+      <span>Java</span><span>Spring Boot</span><span>Spring Security</span><span>PostgreSQL</span><span>Docker</span>
     </p>
   </div>
 
@@ -763,7 +903,7 @@
     <button class="tile" data-panel="education">
       <span class="tile-icon">03 · EDUCATION</span>
       <span class="tile-title">Education</span>
-      <span class="tile-preview">B.Tech CSE · RGPV</span>
+      <span class="tile-preview">B.Tech CSE · 2022–2026</span>
     </button>
     <button class="tile" data-panel="github">
       <span class="tile-icon">04 · GITHUB</span>
@@ -773,7 +913,7 @@
     <button class="tile wide" data-panel="contact">
       <span class="tile-icon">05 · CONTACT</span>
       <span class="tile-title">Get in Touch</span>
-      <span class="tile-preview">Email · LinkedIn · GitHub · Resume</span>
+      <span class="tile-preview">Email · Phone · LinkedIn · GitHub</span>
     </button>
   </div>
 </main>
@@ -795,56 +935,93 @@
 <script>
   // ---------- Data ----------
   const skillsData = {
-    "Backend": ["Java 17", "Spring Boot", "Spring", "REST APIs", "Microservices", "JPA / Hibernate"],
-    "Database": ["PostgreSQL", "MySQL", "SQL", "Redis"],
-    "Tools & DevOps": ["Git / GitHub", "Docker", "Maven", "JIRA", "AWS"],
-    "Frontend": ["React.js", "HTML5", "Tailwind"],
+    "Languages": ["Java (Core & Advanced)", "JavaScript (ES6+)", "HTML5", "CSS3"],
+    "Backend & Security": ["Spring Boot", "Spring Security", "Spring Data JPA", "Hibernate", "JWT", "3-Tier RBAC", "REST APIs"],
+    "Databases": ["PostgreSQL", "MySQL", "MongoDB", "H2"],
+    "DevOps & Tools": ["Docker", "Git", "GitHub Actions (CI/CD)", "Maven", "Postman", "Swagger"],
+    "Frontend & Real-Time": ["React 18", "Vite", "Tailwind CSS", "Recharts", "WebSockets", "Socket.IO"],
   };
 
   const educationFacts = [
-    { label: "Degree", value: "B.Tech" },
-    { label: "Branch", value: "Computer Science Engineering" },
-    { label: "Institution", value: "Vikrant Institute of Technology & Management, Gwalior (RGPV)" },
+    { label: "Degree", value: "B.Tech, Computer Science Engineering" },
+    { label: "Institution", value: "Vikrant Institute of Technology, Gwalior" },
+    { label: "Duration", value: "2022 – 2026" },
+    { label: "Higher Secondary", value: "Navyug Ch. Hr. Sec. School, Gwalior (2021 – 2022)" },
+    { label: "Certification", value: "Oracle AI Foundations Associate — Oracle University, 2025" },
   ];
 
-  const projects = [
-    {
-      id: "equinox",
-      title: "Equinox",
-      shortDesc: "Finance dashboard with JWT auth and role-based access.",
-      fullDesc: "A finance management dashboard with stateless JWT auth, 3-tier RBAC (Admin/Analyst/Viewer) enforced across 20+ endpoints, server-side pagination, dynamic JPA Specification filters, soft deletes, CSV export, and 6 analytics APIs backed by custom JPQL queries. Built with Spring Boot, React, and PostgreSQL, Dockerized with a multi-stage build and GitHub Actions CI/CD.",
-      tags: ["Java", "Spring Boot", "React", "PostgreSQL", "Docker", "JWT"],
-      github: "https://github.com/karanjha000",
-      images: [],
-    },
-    {
-      id: "skillconnect",
-      title: "SkillConnect",
-      shortDesc: "Real-time collaborative coding platform.",
-      fullDesc: "A peer-to-peer collaborative coding platform with a real-time pair-programming editor supporting multi-user code and cursor sync, multi-language code execution (Java, C, C++, JS, Python), and Redis-backed session state for coding rooms. Built with React, Socket.IO, and a Django REST Framework backend.",
-      tags: ["React", "Socket.IO", "Django", "Redis", "JWT"],
-      github: "https://github.com/karanjha000/SkillConnect---Learn-Together-Solve-Together",
-      images: ["images/img1.png", "images/img2.png", "images/img3.png", "images/img4.png", "images/img5.png"],
-    },
-    {
-      id: "bookpilot",
-      title: "Book-Pilot-Manager",
-      shortDesc: "Desktop library management system.",
-      fullDesc: "A desktop library management system built with Core Java and Swing, featuring 10+ interactive screens, full CRUD on books and users, 5-criteria dynamic search, and a normalized 4-table MySQL schema (Users, Students, Books, Issued Transactions), connected via JDBC.",
-      tags: ["Java", "Swing", "MySQL", "JDBC"],
-      github: "https://github.com/karanjha000/Book_Pilot_Manager",
-      images: ["images/Book1.png", "images/Book2.png", "images/Book3.png"],
-    },
-    {
-      id: "klyra",
-      title: "Klyra",
-      shortDesc: "Real-time chat engine.",
-      fullDesc: "A real-time messaging application enabling instant communication with secure message handling, live updates, and a responsive interface for seamless user interaction.",
-      tags: [],
-      github: "https://github.com/karanjha000/Chat_App",
-      images: ["images/klyra1.png"],
-    },
-  ];
+  // Projects are now fetched live from GitHub — see the fetch IIFE below.
+  // No hardcoded project list; this stays empty until repos load.
+  let projects = [];
+  let projectsLoaded = false;
+  let projectsError = false;
+
+  // ---- Skill catalog: resume skills (source of truth) merged with
+  // technologies detected from live GitHub repo language/topics data.
+  // Each entry tracks which project IDs it was detected in. ----
+  const TECH_ALIASES = {
+    javascript: "JavaScript", js: "JavaScript", typescript: "TypeScript", ts: "TypeScript",
+    postgresql: "PostgreSQL", postgres: "PostgreSQL", mysql: "MySQL", mongodb: "MongoDB", mongo: "MongoDB",
+    "spring-boot": "Spring Boot", springboot: "Spring Boot", spring: "Spring Boot",
+    "rest-api": "REST APIs", restapi: "REST APIs", rest: "REST APIs",
+    "socket.io": "Socket.IO", socketio: "Socket.IO", websocket: "WebSockets", websockets: "WebSockets",
+    html: "HTML5", html5: "HTML5", css: "CSS3", css3: "CSS3",
+    java: "Java", python: "Python", "c++": "C++", cpp: "C++",
+    docker: "Docker", git: "Git", maven: "Maven",
+    node: "Node.js", nodejs: "Node.js", "node.js": "Node.js",
+    react: "React", reactjs: "React", tailwindcss: "Tailwind CSS", tailwind: "Tailwind CSS", vite: "Vite",
+    jwt: "JWT", hibernate: "Hibernate", jpa: "Spring Data JPA", swing: "Java Swing", jdbc: "JDBC",
+  };
+
+  function normalizeTech(raw) {
+    const key = raw.trim().toLowerCase();
+    if (TECH_ALIASES[key]) return TECH_ALIASES[key];
+    return raw.length <= 4 ? raw.toUpperCase() : raw.replace(/\b\w/g, (c) => c.toUpperCase());
+  }
+
+  const CATEGORY_MAP = {
+    "Databases": ["PostgreSQL", "MySQL", "MongoDB", "H2", "SQLite", "Redis"],
+    "DevOps & Tools": ["Docker", "Git", "GitHub Actions (CI/CD)", "Maven", "Postman", "Swagger", "Gradle", "Jenkins"],
+    "Frontend & Real-Time": ["React", "React 18", "Vue", "Angular", "HTML5", "CSS3", "Tailwind CSS", "Vite", "WebSockets", "Socket.IO", "JavaScript", "TypeScript", "Recharts"],
+    "Backend & Security": ["Spring Boot", "Spring Security", "Spring Data JPA", "Hibernate", "JWT", "3-Tier RBAC", "REST APIs", "Node.js"],
+    "Languages": ["Java (Core & Advanced)", "Java", "JavaScript (ES6+)", "Python", "C++", "C", "TypeScript"],
+  };
+
+  function categorize(tech) {
+    for (const [cat, list] of Object.entries(CATEGORY_MAP)) {
+      if (list.some((x) => x.toLowerCase() === tech.toLowerCase())) return cat;
+    }
+    return "From GitHub";
+  }
+
+  // key (lowercased name) -> { name, category, source, projectIds:Set }
+  let skillCatalog = {};
+
+  function addSkill(name, category, projectId, source) {
+    const key = name.toLowerCase();
+    if (!skillCatalog[key]) {
+      skillCatalog[key] = { name, category, source, projectIds: new Set() };
+    }
+    if (source === "github" && skillCatalog[key].source === "resume") {
+      skillCatalog[key].source = "both";
+    }
+    if (projectId) skillCatalog[key].projectIds.add(projectId);
+  }
+
+  function buildSkillCatalog() {
+    skillCatalog = {};
+    // Resume skills first — remain visible even with zero detected projects.
+    Object.entries(skillsData).forEach(([cat, list]) => {
+      list.forEach((s) => addSkill(s, cat, null, "resume"));
+    });
+    // Then technologies detected from live repo data.
+    projects.forEach((p) => {
+      p.tags.forEach((t) => {
+        const norm = normalizeTech(t);
+        addSkill(norm, categorize(norm), p.id, "github");
+      });
+    });
+  }
 
   const GITHUB_USER = "karanjha000";
   let ghData = {
@@ -889,7 +1066,7 @@
     contact: "05 / CONTACT",
   };
 
-  let state = { type: null, level: "overview", selected: null, imgIndex: 0 };
+  let state = { type: null, level: "overview", selected: null, imgIndex: 0, skillsLevel: "overview", selectedCategory: null, selectedSkillKey: null };
 
   function setActiveNav(type) {
     document.querySelectorAll(".nav-btn").forEach((btn) => {
@@ -898,20 +1075,42 @@
   }
 
   function openPanel(type) {
-    state = { type, level: "overview", selected: null, imgIndex: 0 };
+    state = { type, level: "overview", selected: null, imgIndex: 0, skillsLevel: "overview", selectedCategory: null, selectedSkillKey: null };
     setActiveNav(type);
     render();
     overlay.classList.add("open");
+    const bg = document.getElementById("bgAppBuild");
+    if (bg) bg.classList.add("dimmed");
   }
 
   function closePanel() {
     overlay.classList.remove("open");
     setActiveNav(null);
+    const bg = document.getElementById("bgAppBuild");
+    if (bg) bg.classList.remove("dimmed");
   }
 
   function goBack() {
-    state.level = "overview";
-    state.selected = null;
+    if (state.type === "skills") {
+      if (state.skillsLevel === "skill") {
+        state.skillsLevel = "category";
+        state.selectedSkillKey = null;
+      } else {
+        state.skillsLevel = "overview";
+        state.selectedCategory = null;
+      }
+    } else {
+      state.level = "overview";
+      state.selected = null;
+    }
+    render();
+  }
+
+  // Lets a project row inside a Skill's detail view jump straight to
+  // that project's full detail, switching panel type mid-flow.
+  function openProjectDetail(projectId) {
+    state = { type: "projects", level: "detail", selected: projectId, imgIndex: 0, skillsLevel: "overview", selectedCategory: null, selectedSkillKey: null };
+    setActiveNav("projects");
     render();
   }
 
@@ -925,7 +1124,8 @@
   });
 
   function render() {
-    panelBack.classList.toggle("show", state.level !== "overview");
+    const showBack = state.type === "skills" ? state.skillsLevel !== "overview" : state.level !== "overview";
+    panelBack.classList.toggle("show", showBack);
     panelEyebrow.textContent = panelEyebrows[state.type] || "";
 
     if (state.type === "skills") renderSkills();
@@ -935,56 +1135,108 @@
     else if (state.type === "contact") renderContact();
   }
 
-  // ---- Skills ----
+  // ---- Skills: category -> skill -> projects using it ----
   function renderSkills() {
-    if (state.level === "overview") {
+    // Group current catalog by category for the overview grid.
+    const groups = {};
+    Object.values(skillCatalog).forEach((s) => {
+      if (!groups[s.category]) groups[s.category] = [];
+      groups[s.category].push(s);
+    });
+
+    if (state.skillsLevel === "overview") {
       panelTitle.textContent = "Skills";
-      const categories = Object.keys(skillsData);
+      const categories = Object.keys(groups);
       panelBody.innerHTML = `<div class="category-grid">${categories
         .map(
           (cat) => `
           <div class="category-tile" data-cat="${cat}">
             <div class="cat-name">${cat}</div>
-            <div class="cat-count">${skillsData[cat].length} technologies</div>
+            <div class="cat-count">${groups[cat].length} technologies</div>
           </div>`,
         )
         .join("")}</div>`;
       panelBody.querySelectorAll(".category-tile").forEach((el) => {
         el.addEventListener("click", () => {
-          state.level = "detail";
-          state.selected = el.dataset.cat;
+          state.skillsLevel = "category";
+          state.selectedCategory = el.dataset.cat;
+          render();
+        });
+      });
+    } else if (state.skillsLevel === "category") {
+      const cat = state.selectedCategory;
+      panelTitle.textContent = cat;
+      const skills = groups[cat] || [];
+      panelBody.innerHTML = `<div class="skill-vertical-list">${skills
+        .map((s) => {
+          const count = s.projectIds.size;
+          const key = s.name.toLowerCase();
+          return `
+          <div class="skill-vertical-item${count ? " clickable" : ""}" data-key="${key}">
+            <span class="skill-dash">—</span>
+            <span class="skill-name">${s.name}</span>
+            ${count ? `<span class="skill-count-badge">${count} project${count === 1 ? "" : "s"}</span>` : ""}
+          </div>`;
+        })
+        .join("")}</div>`;
+      panelBody.querySelectorAll(".skill-vertical-item.clickable").forEach((el) => {
+        el.addEventListener("click", () => {
+          state.skillsLevel = "skill";
+          state.selectedSkillKey = el.dataset.key;
           render();
         });
       });
     } else {
-      const cat = state.selected;
-      panelTitle.textContent = cat;
-      panelBody.innerHTML = `<div class="skill-vertical-list">${skillsData[cat]
-        .map(
-          (s) => `
-          <div class="skill-vertical-item">
-            <span class="skill-dash">—</span>
-            <span class="skill-name">${s}</span>
-          </div>`,
-        )
-        .join("")}</div>`;
+      const skill = skillCatalog[state.selectedSkillKey];
+      panelTitle.textContent = skill ? skill.name : "Skill";
+      if (!skill) {
+        panelBody.innerHTML = `<p style="color:var(--text-soft); font-size:0.85rem;">Skill not found.</p>`;
+        return;
+      }
+      const projectRows = [...skill.projectIds]
+        .map((id) => projects.find((p) => p.id === id))
+        .filter(Boolean);
+      panelBody.innerHTML = `
+        <p style="color:var(--text-soft); font-size:0.8rem; margin-bottom:16px;">
+          ${skill.category} · ${projectRows.length} project${projectRows.length === 1 ? "" : "s"} using this
+        </p>
+        <div class="skill-vertical-list">${projectRows
+          .map((p) => `<div class="skill-vertical-item clickable" data-pid="${p.id}"><span class="skill-dash">→</span><span class="skill-name">${p.title}</span></div>`)
+          .join("") || `<p style="color:var(--text-soft); font-size:0.85rem;">No detected project usage yet.</p>`}</div>
+      `;
+      panelBody.querySelectorAll(".skill-vertical-item.clickable").forEach((el) => {
+        el.addEventListener("click", () => openProjectDetail(el.dataset.pid));
+      });
     }
   }
 
-  // ---- Projects ----
+  // ---- Projects — fetched live from GitHub, see fetch IIFE below ----
   function renderProjects() {
     if (state.level === "overview") {
       panelTitle.textContent = "Projects";
+
+      if (!projectsLoaded) {
+        panelBody.innerHTML = `<p style="color:var(--text-muted); font-size:0.9rem;">Loading projects from GitHub…</p>`;
+        return;
+      }
+      if (projectsError) {
+        panelBody.innerHTML = `<p style="color:var(--text-muted); font-size:0.9rem;">Unable to load projects from GitHub right now. Please try again shortly.</p>`;
+        return;
+      }
+      if (!projects.length) {
+        panelBody.innerHTML = `<p style="color:var(--text-muted); font-size:0.9rem;">No public repositories found.</p>`;
+        return;
+      }
+
       panelBody.innerHTML = `<div class="project-grid">${projects
         .map(
           (p) => `
           <div class="project-tile" data-id="${p.id}">
-            <div class="thumb">${
-              p.images.length ? `<img src="${p.images[0]}" alt="${p.title}" />` : p.title.toUpperCase()
-            }</div>
+            <div class="thumb">${p.title.toUpperCase()}</div>
             <div class="tile-body">
               <h3>${p.title}</h3>
               <p>${p.shortDesc}</p>
+              <p class="tile-meta">${[p.language, p.stars ? "★ " + p.stars : null].filter(Boolean).join(" · ")}</p>
             </div>
           </div>`,
         )
@@ -999,6 +1251,7 @@
       });
     } else {
       const p = projects.find((x) => x.id === state.selected);
+      if (!p) { state.level = "overview"; render(); return; }
       panelTitle.textContent = p.title;
 
       const imageBlock = p.images.length
@@ -1009,9 +1262,16 @@
            </div>`
         : `<div class="detail-image-nav" style="background:linear-gradient(135deg,#101a2e,#1c2b45); font-family:var(--mono); color:var(--text-soft); font-size:0.85rem;">${p.title.toUpperCase()}</div>`;
 
+      const metaLine = [
+        p.stars ? "★ " + p.stars + " stars" : null,
+        p.forks ? p.forks + " forks" : null,
+        p.updated ? "updated " + timeAgo(p.updated) : null,
+      ].filter(Boolean).join(" · ");
+
       panelBody.innerHTML = `
         ${imageBlock}
         <div class="detail-tags">${p.tags.map((t) => `<span class="skill-pill">${t}</span>`).join("")}</div>
+        ${metaLine ? `<p style="color:var(--text-soft); font-size:0.78rem; font-family:var(--mono); margin-bottom:16px;">${metaLine}</p>` : ""}
         <p class="detail-desc">${p.fullDesc}</p>
         <a class="btn btn-primary btn-sm" href="${p.github}" target="_blank" rel="noreferrer">View on GitHub</a>
       `;
@@ -1148,12 +1408,16 @@
     panelTitle.textContent = "Contact";
     panelBody.innerHTML = `
       <div class="contact-action-list">
-        <a class="contact-action" href="mailto:Karanjhax12@email.com">
-          <div><div class="ca-label">Email</div><div class="ca-value">Karanjhax12@email.com</div></div>
+        <a class="contact-action" href="mailto:karanjhax12@gmail.com">
+          <div><div class="ca-label">Email</div><div class="ca-value">karanjhax12@gmail.com</div></div>
           <span class="ca-arrow">→</span>
         </a>
-        <a class="contact-action" href="https://linkedin.com/in/Karan-jha-k99999" target="_blank" rel="noreferrer">
-          <div><div class="ca-label">LinkedIn</div><div class="ca-value">linkedin.com/in/Karan-jha-k99999</div></div>
+        <a class="contact-action" href="tel:+918959863919">
+          <div><div class="ca-label">Phone</div><div class="ca-value">+91 89598 63919</div></div>
+          <span class="ca-arrow">→</span>
+        </a>
+        <a class="contact-action" href="https://www.linkedin.com/in/karanjha000/" target="_blank" rel="noreferrer">
+          <div><div class="ca-label">LinkedIn</div><div class="ca-value">linkedin.com/in/karanjha000</div></div>
           <span class="ca-arrow">→</span>
         </a>
         <a class="contact-action" href="https://github.com/karanjha000" target="_blank" rel="noreferrer">
@@ -1189,6 +1453,54 @@
       const reposRes = await fetch(`https://api.github.com/users/${GITHUB_USER}/repos?per_page=100&sort=updated`);
       const repos = reposRes.ok ? await reposRes.json() : [];
       ghData.repos = repos;
+
+      // ---- Build Projects dynamically from live repos ----
+      // Real screenshots we already have for a few known repos are kept
+      // (GitHub's API can't supply project screenshots), matched by
+      // repo name only — everything else (title, description, tags,
+      // stars, forks, links) comes straight from the API response.
+      const KNOWN_IMAGES = {
+        "SkillConnect---Learn-Together-Solve-Together": ["images/img1.png", "images/img2.png", "images/img3.png", "images/img4.png", "images/img5.png"],
+        "Book_Pilot_Manager": ["images/Book1.png", "images/Book2.png", "images/Book3.png"],
+        "Chat_App": ["images/klyra1.png"],
+      };
+
+      function humanizeName(name) {
+        return name.replace(/[-_]+/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+      }
+
+      function truncate(str, n) {
+        return str.length > n ? str.slice(0, n - 1).trim() + "…" : str;
+      }
+
+      try {
+        const nonForkRepos = repos.filter((r) => !r.fork).sort((a, b) => new Date(b.pushed_at) - new Date(a.pushed_at));
+        projects = nonForkRepos.map((r) => {
+          const tags = [];
+          if (r.language) tags.push(r.language);
+          if (Array.isArray(r.topics)) tags.push(...r.topics);
+          return {
+            id: r.name,
+            title: humanizeName(r.name),
+            shortDesc: r.description ? truncate(r.description, 90) : "No description provided.",
+            fullDesc: r.description || "No description has been provided for this repository yet.",
+            tags: [...new Set(tags)],
+            language: r.language,
+            stars: r.stargazers_count,
+            forks: r.forks_count,
+            updated: r.pushed_at,
+            github: r.html_url,
+            images: KNOWN_IMAGES[r.name] || [],
+          };
+        });
+        projectsLoaded = true;
+      } catch (err) {
+        projectsError = true;
+        projectsLoaded = true;
+      }
+
+      buildSkillCatalog();
+      if (state.type === "projects" || state.type === "skills") render();
 
       const oneYearAgo = Date.now() - 365 * 24 * 60 * 60 * 1000;
       ghData.activeRepos = repos.filter((r) => new Date(r.pushed_at).getTime() > oneYearAgo).length;
@@ -1283,6 +1595,10 @@
       }
     } catch (err) {
       ghData.weeksMatrix = Array.from({ length: 52 }, () => Array(7).fill(0));
+      if (!projectsLoaded) {
+        projectsError = true;
+        projectsLoaded = true;
+      }
     } finally {
       ghLoaded = true;
       const tilePreview = document.getElementById("ghTilePreview");
@@ -1294,6 +1610,108 @@
       if (state.type === "github") render();
     }
   })();
+
+  // ---------- Application-building background animation ----------
+  // Pure decoration: pauses when the tab is hidden, dims while any
+  // panel is open, and is hidden entirely on narrow screens via CSS.
+  const bgAppBuild = document.getElementById("bgAppBuild");
+
+  const zoneSnippets = {
+    frontend: [
+      ["function ProjectList() {", "  const [data, setData] =", "    useState([]);", "  useEffect(() => {", "    api.get('/projects')", "      .then(setData);", "  }, []);"],
+      ["<form onSubmit={handleSubmit}>", "  <input", "    value={email}", "    onChange={onChange} />", "  <button type=\"submit\">", "    Save", "  </button>", "</form>"],
+    ],
+    backend: [
+      ["@RestController", "@RequestMapping(\"/api/orders\")", "public class OrderController {", "  @Autowired", "  private OrderService service;", "", "  @PostMapping", "  public Order create(", "    @Valid @RequestBody", "    OrderDto dto) {"],
+      ["@Service", "public class OrderService {", "  public Order place(Dto dto) {", "    validate(dto);", "    Order o = repo.save(", "      map(dto));", "    return o;", "  }", "}"],
+    ],
+    database: [
+      ["SELECT id, name, status", "FROM users", "WHERE active = true", "ORDER BY created_at DESC;"],
+      ["CREATE INDEX idx_orders_user", "  ON orders(user_id);", "", "UPDATE orders", "SET status = 'PAID'", "WHERE id = ?;"],
+    ],
+    testing: [
+      ["@SpringBootTest", "@AutoConfigureMockMvc", "class OrderApiTest {", "  @Test", "  void createsOrder() {", "    mockMvc.perform(post(", "      \"/api/orders\"))", "      .andExpect(status()", "        .isCreated());", "  }", "}"],
+      ["@Test", "void rejectsInvalidDto() {", "  when(repo.save(any()))", "    .thenThrow(", "      new ValidationEx());", "  assertThrows(", "    ValidationEx.class,", "    () -> service.place(dto));", "}"],
+    ],
+    devops: [
+      ["$ git push origin main", "$ mvn test", "$ mvn package -DskipTests", "$ docker build -t app .", "$ docker push app:latest"],
+      ["Running CI pipeline…", "✓ checkout", "✓ build (mvn package)", "✓ unit tests (42 passed)", "✓ docker image built", "→ triggering deploy"],
+    ],
+    deployment: [
+      ["$ docker run -d \\", "  -p 8080:8080 \\", "  --env-file .env \\", "  app:latest", "Container started ✓", "GET /actuator/health", "200 OK — status: UP"],
+      ["Deploying to production…", "✓ container healthy", "✓ db connection pool ok", "✓ ssl certificate valid", "Service is live ✓"],
+    ],
+  };
+
+  function startZoneTypewriter(el, lines) {
+    const textEl = el.querySelector(".zone-text");
+    let snippetIndex = 0;
+    let charIndex = 0;
+    let phase = "typing"; // typing | holding | erasing
+
+    function tick() {
+      const snippet = lines[snippetIndex % lines.length];
+      const full = snippet.join("\n");
+
+      if (phase === "typing") {
+        charIndex += 2;
+        if (charIndex >= full.length) {
+          charIndex = full.length;
+          phase = "holding";
+          setTimeout(() => { phase = "erasing"; }, 2600);
+        }
+      } else if (phase === "erasing") {
+        charIndex -= 4;
+        if (charIndex <= 0) {
+          charIndex = 0;
+          phase = "typing";
+          snippetIndex++;
+        }
+      }
+
+      textEl.innerHTML = escapeHtml(full.slice(0, charIndex)) + '<span class="zone-cursor"></span>';
+    }
+
+    tick();
+    return setInterval(tick, 70);
+  }
+
+  function escapeHtml(str) {
+    return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  }
+
+  let zoneTimers = [];
+
+  function startBackgroundAnimation() {
+    if (!bgAppBuild || zoneTimers.length) return;
+    const zoneMap = [
+      [".zone-frontend", zoneSnippets.frontend],
+      [".zone-backend", zoneSnippets.backend],
+      [".zone-database", zoneSnippets.database],
+      [".zone-testing", zoneSnippets.testing],
+      [".zone-devops", zoneSnippets.devops],
+      [".zone-deployment", zoneSnippets.deployment],
+    ];
+    zoneMap.forEach(([selector, lines]) => {
+      const el = document.querySelector(selector);
+      if (el) zoneTimers.push(startZoneTypewriter(el, lines));
+    });
+  }
+
+  function stopBackgroundAnimation() {
+    zoneTimers.forEach((t) => clearInterval(t));
+    zoneTimers = [];
+  }
+
+  if (window.innerWidth > 700) startBackgroundAnimation();
+
+  document.addEventListener("visibilitychange", () => {
+    if (document.hidden) stopBackgroundAnimation();
+    else if (window.innerWidth > 700) startBackgroundAnimation();
+  });
+
+  // Dim the background whenever a panel is open — it must never
+  // visually compete with foreground panel content.
 
   // ---------- Visit tracking ----------
   (async () => {
