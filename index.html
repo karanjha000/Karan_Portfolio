@@ -60,19 +60,23 @@
 
     /* ---- Application-building background animation ----
        Strictly decorative: fixed, z-index 1 (below header z-index 20 and
-       dashboard z-index 5), pointer-events none, low opacity. Dimmed
-       further while any panel is open so it never competes with the
-       foreground UI. */
+       dashboard z-index 5), pointer-events none. A mask fades the upper
+       ~60% of the viewport heavily (where the hero text/tiles live) so
+       the pipeline stays fully legible in the emptier lower band while
+       remaining large enough there to actually read as one connected
+       system. Dimmed further while any panel is open. */
     .bg-app-build {
       position: fixed;
       inset: 0;
       z-index: 1;
       pointer-events: none;
-      opacity: 0.22;
+      opacity: 0.3;
       transition: opacity 0.4s ease;
+      mask-image: linear-gradient(to bottom, transparent 0%, rgba(0,0,0,0.12) 42%, rgba(0,0,0,0.95) 64%, black 100%);
+      -webkit-mask-image: linear-gradient(to bottom, transparent 0%, rgba(0,0,0,0.12) 42%, rgba(0,0,0,0.95) 64%, black 100%);
     }
 
-    .bg-app-build.dimmed { opacity: 0.05; }
+    .bg-app-build.dimmed { opacity: 0.06; }
 
     .connector-svg {
       position: absolute;
@@ -84,10 +88,10 @@
     .connector-svg path {
       fill: none;
       stroke: var(--accent);
-      stroke-width: 1;
-      stroke-dasharray: 6 10;
-      opacity: 0.5;
-      animation: dash-flow 14s linear infinite;
+      stroke-width: 1.4;
+      stroke-dasharray: 7 11;
+      opacity: 0.6;
+      animation: dash-flow 12s linear infinite;
     }
 
     @keyframes dash-flow {
@@ -96,11 +100,11 @@
 
     .code-zone {
       position: absolute;
-      width: 230px;
+      width: 280px;
       font-family: var(--mono);
-      font-size: 0.66rem;
-      line-height: 1.55;
-      color: rgba(148, 197, 255, 0.55);
+      font-size: 0.78rem;
+      line-height: 1.6;
+      color: rgba(148, 197, 255, 0.65);
       white-space: pre;
     }
 
@@ -114,8 +118,8 @@
 
     .code-zone .zone-cursor {
       display: inline-block;
-      width: 6px;
-      height: 11px;
+      width: 7px;
+      height: 13px;
       background: var(--accent);
       margin-left: 2px;
       vertical-align: text-bottom;
@@ -126,15 +130,21 @@
       50% { opacity: 0; }
     }
 
-    .zone-frontend { top: 8%; left: 3%; }
-    .zone-backend { top: 8%; right: 3%; }
-    .zone-database { top: 42%; right: 2%; }
-    .zone-testing { bottom: 20%; left: 3%; }
-    .zone-devops { bottom: 4%; left: 32%; text-align: left; }
-    .zone-deployment { bottom: 20%; right: 3%; }
+    /* One continuous bottom band, left-to-right, in pipeline order —
+       reads as a single connected system rather than scattered corners. */
+    .zone-frontend { left: 2%; bottom: 8%; }
+    .zone-backend { left: 19%; bottom: 8%; }
+    .zone-database { left: 36%; bottom: 8%; }
+    .zone-testing { left: 53%; bottom: 8%; }
+    .zone-devops { left: 70%; bottom: 8%; }
+    .zone-deployment { right: 2%; bottom: 8%; }
 
-    @media (max-width: 1100px) {
-      .zone-frontend, .zone-testing, .zone-devops { display: none; }
+    @media (max-width: 1300px) {
+      .zone-testing { display: none; }
+    }
+
+    @media (max-width: 1000px) {
+      .zone-devops, .zone-database { display: none; }
     }
 
     @media (max-width: 700px) {
@@ -485,7 +495,17 @@
       overflow-y: auto;
       flex: 1;
       min-height: 0;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(59, 130, 246, 0.4) transparent;
     }
+
+    .panel-body::-webkit-scrollbar { width: 6px; }
+    .panel-body::-webkit-scrollbar-track { background: transparent; }
+    .panel-body::-webkit-scrollbar-thumb {
+      background: rgba(59, 130, 246, 0.35);
+      border-radius: 999px;
+    }
+    .panel-body::-webkit-scrollbar-thumb:hover { background: rgba(59, 130, 246, 0.6); }
 
     /* Skills panel */
     .category-grid {
@@ -818,12 +838,23 @@
 
 <div class="bg-app-build" id="bgAppBuild">
   <svg class="connector-svg" preserveAspectRatio="none">
-    <path d="M 18% 16% Q 40% 10%, 78% 16%" />
-    <path d="M 78% 16% Q 82% 40%, 80% 48%" />
-    <path d="M 80% 48% Q 60% 60%, 40% 78%" />
-    <path d="M 40% 78% Q 55% 88%, 34% 92%" />
-    <path d="M 34% 92% Q 60% 95%, 78% 78%" />
-    <path d="M 18% 16% Q 10% 55%, 18% 78%" />
+    <path d="M 8% 92% L 25% 92% L 42% 92% L 59% 92% L 76% 92% L 93% 92%" />
+
+    <circle r="3" fill="#3b82f6" opacity="0.85">
+      <animateMotion dur="3.5s" repeatCount="indefinite" path="M 8% 92% L 25% 92%" />
+    </circle>
+    <circle r="3" fill="#3b82f6" opacity="0.85">
+      <animateMotion dur="3.5s" begin="0.7s" repeatCount="indefinite" path="M 25% 92% L 42% 92%" />
+    </circle>
+    <circle r="3" fill="#3b82f6" opacity="0.85">
+      <animateMotion dur="3.5s" begin="1.4s" repeatCount="indefinite" path="M 42% 92% L 59% 92%" />
+    </circle>
+    <circle r="3" fill="#3b82f6" opacity="0.85">
+      <animateMotion dur="3.5s" begin="2.1s" repeatCount="indefinite" path="M 59% 92% L 76% 92%" />
+    </circle>
+    <circle r="3" fill="#3b82f6" opacity="0.85">
+      <animateMotion dur="3.5s" begin="2.8s" repeatCount="indefinite" path="M 76% 92% L 93% 92%" />
+    </circle>
   </svg>
 
   <div class="code-zone zone-frontend">
@@ -858,6 +889,7 @@
     <div style="display:flex; align-items:center; gap:14px;">
       <ul class="nav-links" id="navLinks">
         <li><button class="nav-btn" data-panel="skills">Skills</button></li>
+        <li><button class="nav-btn" data-panel="experience">Experience</button></li>
         <li><button class="nav-btn" data-panel="projects">Projects</button></li>
         <li><button class="nav-btn" data-panel="contact">Contact</button></li>
         <li><a class="nav-resume" href="resume.pdf" download>Resume</a></li>
@@ -882,7 +914,7 @@
     </p>
     <div class="cta-group">
       <button class="btn btn-primary" data-panel="projects">View Projects</button>
-      <a href="resume.pdf" class="btn btn-outline" download>Download Resume</a>
+      <button class="btn btn-outline" data-panel="resumeview">View Resume</button>
     </div>
     <p class="quick-stack">
       <span>Java</span><span>Spring Boot</span><span>Spring Security</span><span>PostgreSQL</span><span>Docker</span>
@@ -895,23 +927,28 @@
       <span class="tile-title">Skills</span>
       <span class="tile-preview">Backend · DB · DevOps · Frontend</span>
     </button>
+    <button class="tile" data-panel="experience">
+      <span class="tile-icon">02 · EXPERIENCE</span>
+      <span class="tile-title">Experience</span>
+      <span class="tile-preview">Simplifying Skills — Jul 2025–Jan 2026</span>
+    </button>
     <button class="tile" data-panel="projects">
-      <span class="tile-icon">02 · PROJECTS</span>
+      <span class="tile-icon">03 · PROJECTS</span>
       <span class="tile-title">Projects</span>
-      <span class="tile-preview">4 shipped builds</span>
+      <span class="tile-preview" id="projectsTilePreview">Live from GitHub</span>
     </button>
     <button class="tile" data-panel="education">
-      <span class="tile-icon">03 · EDUCATION</span>
+      <span class="tile-icon">04 · EDUCATION</span>
       <span class="tile-title">Education</span>
       <span class="tile-preview">B.Tech CSE · 2022–2026</span>
     </button>
     <button class="tile" data-panel="github">
-      <span class="tile-icon">04 · GITHUB</span>
+      <span class="tile-icon">05 · GITHUB</span>
       <span class="tile-title">GitHub Activity</span>
       <span class="tile-preview" id="ghTilePreview">Live data…</span>
     </button>
-    <button class="tile wide" data-panel="contact">
-      <span class="tile-icon">05 · CONTACT</span>
+    <button class="tile" data-panel="contact">
+      <span class="tile-icon">06 · CONTACT</span>
       <span class="tile-title">Get in Touch</span>
       <span class="tile-preview">Email · Phone · LinkedIn · GitHub</span>
     </button>
@@ -944,11 +981,24 @@
 
   const educationFacts = [
     { label: "Degree", value: "B.Tech, Computer Science Engineering" },
-    { label: "Institution", value: "Vikrant Institute of Technology, Gwalior" },
+    { label: "Institution", value: "Rajiv Gandhi Proudyogiki Vishwavidyalaya (RGPV)" },
     { label: "Duration", value: "2022 – 2026" },
     { label: "Higher Secondary", value: "Navyug Ch. Hr. Sec. School, Gwalior (2021 – 2022)" },
     { label: "Certification", value: "Oracle AI Foundations Associate — Oracle University, 2025" },
   ];
+
+  const experienceData = {
+    organization: "Simplifying Skills – Transforming Education",
+    duration: "July 2025 – January 2026",
+    focusAreas: ["Technical Skills", "Soft Skills"],
+    project: {
+      name: "SkillConnect",
+      type: "Team Project",
+      role: "Project Leader / Team Leader",
+      note: "Led the development of SkillConnect as a team project under this partnership.",
+      repoId: "SkillConnect---Learn-Together-Solve-Together",
+    },
+  };
 
   // Projects are now fetched live from GitHub — see the fetch IIFE below.
   // No hardcoded project list; this stays empty until repos load.
@@ -1033,6 +1083,7 @@
     languageCounts: {},
     currentStreak: 0,
     longestStreak: 0,
+    commitDataAvailable: false,
     activeRepos: 0,
     pullRequests: null,
     issues: null,
@@ -1060,10 +1111,12 @@
 
   const panelEyebrows = {
     skills: "01 / SKILLS",
-    projects: "02 / PROJECTS",
-    education: "03 / EDUCATION",
-    github: "04 / GITHUB",
-    contact: "05 / CONTACT",
+    experience: "02 / EXPERIENCE",
+    projects: "03 / PROJECTS",
+    education: "04 / EDUCATION",
+    github: "05 / GITHUB",
+    contact: "06 / CONTACT",
+    resumeview: "// RESUME",
   };
 
   let state = { type: null, level: "overview", selected: null, imgIndex: 0, skillsLevel: "overview", selectedCategory: null, selectedSkillKey: null };
@@ -1129,13 +1182,82 @@
     panelEyebrow.textContent = panelEyebrows[state.type] || "";
 
     if (state.type === "skills") renderSkills();
+    else if (state.type === "experience") renderExperience();
     else if (state.type === "projects") renderProjects();
     else if (state.type === "education") renderEducation();
     else if (state.type === "github") renderGithub();
     else if (state.type === "contact") renderContact();
+    else if (state.type === "resumeview") renderResumeView();
   }
 
-  // ---- Skills: category -> skill -> projects using it ----
+  // ---- Experience ----
+  function renderExperience() {
+    panelTitle.textContent = "Experience";
+    const proj = experienceData.project;
+    const linkedProject = projects.find((p) => p.id === proj.repoId);
+    panelBody.innerHTML = `
+      <div class="edu-row"><span class="edu-label">Organization</span><span class="edu-value">${experienceData.organization}</span></div>
+      <div class="edu-row"><span class="edu-label">Duration</span><span class="edu-value">${experienceData.duration}</span></div>
+      <div class="edu-row"><span class="edu-label">Focus Areas</span><span class="edu-value">${experienceData.focusAreas.join(" & ")}</span></div>
+
+      <p class="gh-section-label">Project Under This Partnership</p>
+      <div class="edu-row"><span class="edu-label">Project</span><span class="edu-value">${proj.name}</span></div>
+      <div class="edu-row"><span class="edu-label">Type</span><span class="edu-value">${proj.type}</span></div>
+      <div class="edu-row"><span class="edu-label">Role</span><span class="edu-value">${proj.role}</span></div>
+      <p style="color:var(--text-muted); font-size:0.88rem; margin-top:14px; line-height:1.6;">${proj.note}</p>
+      ${linkedProject ? `<button class="btn btn-outline btn-sm" id="viewSkillConnectBtn" style="margin-top:16px;">View SkillConnect Project</button>` : ""}
+    `;
+    if (linkedProject) {
+      document.getElementById("viewSkillConnectBtn").addEventListener("click", () => openProjectDetail(proj.repoId));
+    }
+  }
+
+  // ---- Resume viewer (Hero "View Resume") — read-only inline viewer,
+  // never triggers a download by itself. ----
+  function renderResumeView() {
+    panelTitle.textContent = "Resume";
+    panelBody.innerHTML = `
+      <div style="height:100%; display:flex; flex-direction:column;">
+        <iframe src="resume.pdf" title="Karan Jha Resume" style="width:100%; flex:1; min-height:420px; border:1px solid var(--border); border-radius:8px; background:#fff;"></iframe>
+        <a href="resume.pdf" download class="btn btn-outline btn-sm" style="margin-top:16px; align-self:flex-start;">Download PDF</a>
+      </div>
+    `;
+  }
+
+  // ---- Project Preview ----
+  // Honest by design: this frontend has no sandboxed execution backend
+  // to clone/build/run arbitrary repositories, so Preview never
+  // fabricates a running application. It shows a real status sequence
+  // and ends in a clear "unavailable" state, per the explicit
+  // requirement to never claim an app is running when it isn't.
+  function runPreviewSequence(container) {
+    const stages = [
+      "Fetching repository…",
+      "Analyzing project…",
+      "Checking for a preview environment…",
+    ];
+    container.innerHTML = `<p class="preview-status" id="previewStageText" style="font-family:var(--mono); font-size:0.82rem; color:var(--text-muted); margin-top:4px;">${stages[0]}</p>`;
+    const stageText = document.getElementById("previewStageText");
+    let i = 0;
+    const interval = setInterval(() => {
+      i++;
+      if (i < stages.length) {
+        stageText.textContent = stages[i];
+      } else {
+        clearInterval(interval);
+        container.innerHTML = `
+          <div style="border:1px solid var(--border); border-radius:8px; padding:14px 16px; margin-top:4px;">
+            <p style="font-family:var(--mono); font-size:0.78rem; color:var(--text-soft); margin-bottom:4px;">● Preview unavailable</p>
+            <p style="font-size:0.85rem; color:var(--text-muted); line-height:1.6;">
+              This portfolio doesn't have a sandboxed execution backend configured, so
+              repositories can't be automatically built and run for visitors yet.
+              Use View on GitHub (or Live Demo, if shown above) in the meantime.
+            </p>
+          </div>
+        `;
+      }
+    }, 700);
+  }
   function renderSkills() {
     // Group current catalog by category for the overview grid.
     const groups = {};
@@ -1273,8 +1395,15 @@
         <div class="detail-tags">${p.tags.map((t) => `<span class="skill-pill">${t}</span>`).join("")}</div>
         ${metaLine ? `<p style="color:var(--text-soft); font-size:0.78rem; font-family:var(--mono); margin-bottom:16px;">${metaLine}</p>` : ""}
         <p class="detail-desc">${p.fullDesc}</p>
-        <a class="btn btn-primary btn-sm" href="${p.github}" target="_blank" rel="noreferrer">View on GitHub</a>
+        <div class="cta-row" style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:14px;">
+          <button class="btn btn-outline btn-sm" id="previewBtn">Preview</button>
+          ${p.liveUrl ? `<a class="btn btn-outline btn-sm" href="${p.liveUrl}" target="_blank" rel="noreferrer">Live Demo</a>` : ""}
+          <a class="btn btn-primary btn-sm" href="${p.github}" target="_blank" rel="noreferrer">View on GitHub</a>
+        </div>
+        <div id="previewStatus"></div>
       `;
+
+      document.getElementById("previewBtn").addEventListener("click", () => runPreviewSequence(document.getElementById("previewStatus")));
 
       if (p.images.length > 1) {
         const imgEl = document.getElementById("detailImg");
@@ -1318,8 +1447,8 @@
 
         <p class="gh-section-label">Commit Activity</p>
         <div class="gh-stat-row">
-          <div class="gh-stat primary"><div class="gh-stat-value">${ghData.currentStreak}d</div><div class="gh-stat-label">Current Streak</div></div>
-          <div class="gh-stat primary"><div class="gh-stat-value">${ghData.repoStatsLoaded > 0 ? ghData.totalCommits : "—"}</div><div class="gh-stat-label">Commits (1yr)</div></div>
+          <div class="gh-stat primary"><div class="gh-stat-value">${ghData.commitDataAvailable ? ghData.currentStreak + "d" : "—"}</div><div class="gh-stat-label">Current Streak</div></div>
+          <div class="gh-stat primary"><div class="gh-stat-value">${ghData.commitDataAvailable ? ghData.totalCommits : "—"}</div><div class="gh-stat-label">Commits (1yr)</div></div>
           <div class="gh-stat primary"><div class="gh-stat-value">${ghData.profile ? ghData.profile.public_repos : "—"}</div><div class="gh-stat-label">Public Repos</div></div>
         </div>
 
@@ -1361,7 +1490,7 @@
 
         <p class="gh-section-label">Repository &amp; Contribution Stats</p>
         <div class="gh-secondary-row">
-          <div class="gh-secondary-stat"><div class="gh-secondary-value">${ghData.longestStreak}d</div><div class="gh-secondary-label">Longest Streak</div></div>
+          <div class="gh-secondary-stat"><div class="gh-secondary-value">${ghData.commitDataAvailable ? ghData.longestStreak + "d" : "—"}</div><div class="gh-secondary-label">Longest Streak</div></div>
           <div class="gh-secondary-stat"><div class="gh-secondary-value">${ghData.activeRepos}</div><div class="gh-secondary-label">Active Repos</div></div>
           <div class="gh-secondary-stat"><div class="gh-secondary-value">${ghData.pullRequests !== null ? ghData.pullRequests : "—"}</div><div class="gh-secondary-label">Pull Requests</div></div>
           <div class="gh-secondary-stat"><div class="gh-secondary-value">${ghData.issues !== null ? ghData.issues : "—"}</div><div class="gh-secondary-label">Issues</div></div>
@@ -1465,6 +1594,48 @@
         "Chat_App": ["images/klyra1.png"],
       };
 
+      // Resume-verified tech stacks for the projects already documented
+      // on the resume — merged in regardless of what GitHub's language
+      // stats show, since a mixed-stack repo (e.g. Java backend + React
+      // frontend in one repo) can report a misleading single "primary
+      // language". This is ground-truth from the resume, not a guess.
+      const RESUME_VERIFIED_TAGS = {
+        equinox: ["Java", "Spring Boot", "Spring Security", "Spring Data JPA", "JWT", "React", "PostgreSQL", "Docker"],
+        skillconnect: ["React", "Socket.IO", "WebSockets", "REST APIs"],
+        bookpilot: ["Java", "MySQL", "Java Swing", "JDBC"],
+      };
+
+      // This portfolio's own repo and any repo containing only a README
+      // are excluded — they're not development projects. The five named
+      // projects get top priority when present; everything else genuine
+      // is still discoverable, just ranked after them.
+      const PRIORITY_MATCHERS = ["skillconnect", "equinox", "chronoclass", "purelane", "shopify", "bookpilot", "book_pilot", "book-pilot"];
+      const EXCLUDE_SUBSTRINGS = ["portfolio"];
+
+      function isLikelyRealProject(r) {
+        const n = r.name.toLowerCase();
+        if (n === GITHUB_USER.toLowerCase()) return false; // GitHub profile README repo
+        if (EXCLUDE_SUBSTRINGS.some((x) => n.includes(x))) return false;
+        if (r.fork) return false;
+        // Trivial/empty repos: no description, no language, tiny size
+        if (!r.description && !r.language && (r.size || 0) < 50) return false;
+        return true;
+      }
+
+      function priorityIndex(r) {
+        const n = r.name.toLowerCase();
+        const idx = PRIORITY_MATCHERS.findIndex((m) => n.includes(m));
+        return idx === -1 ? PRIORITY_MATCHERS.length : idx;
+      }
+
+      function resumeTagsFor(repoName) {
+        const n = repoName.toLowerCase();
+        for (const [key, tags] of Object.entries(RESUME_VERIFIED_TAGS)) {
+          if (n.includes(key)) return tags;
+        }
+        return [];
+      }
+
       function humanizeName(name) {
         return name.replace(/[-_]+/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
       }
@@ -1474,11 +1645,47 @@
       }
 
       try {
-        const nonForkRepos = repos.filter((r) => !r.fork).sort((a, b) => new Date(b.pushed_at) - new Date(a.pushed_at));
-        projects = nonForkRepos.map((r) => {
+        const candidateRepos = repos
+          .filter(isLikelyRealProject)
+          .sort((a, b) => {
+            const pa = priorityIndex(a);
+            const pb = priorityIndex(b);
+            if (pa !== pb) return pa - pb;
+            return new Date(b.pushed_at) - new Date(a.pushed_at);
+          });
+
+        // Enrich the top candidates with real per-repo language-byte
+        // breakdowns (not just the single "primary language" field) —
+        // this is what actually fixes Java being missed on mixed-stack
+        // repos like Equinox. Capped to control unauthenticated rate
+        // limits; remaining repos still get primary language + topics.
+        const ENRICH_LIMIT = 15;
+        const languageBreakdowns = {};
+        await Promise.all(
+          candidateRepos.slice(0, ENRICH_LIMIT).map(async (r) => {
+            try {
+              const res = await fetch(`https://api.github.com/repos/${GITHUB_USER}/${r.name}/languages`);
+              if (res.ok) languageBreakdowns[r.name] = await res.json();
+            } catch (err) {
+              // skip — falls back to primary language only
+            }
+          }),
+        );
+
+        projects = candidateRepos.map((r) => {
           const tags = [];
-          if (r.language) tags.push(r.language);
+          const breakdown = languageBreakdowns[r.name];
+          if (breakdown) {
+            const totalBytes = Object.values(breakdown).reduce((a, b) => a + b, 0) || 1;
+            Object.entries(breakdown).forEach(([lang, bytes]) => {
+              if (bytes / totalBytes >= 0.08) tags.push(lang);
+            });
+          } else if (r.language) {
+            tags.push(r.language);
+          }
           if (Array.isArray(r.topics)) tags.push(...r.topics);
+          tags.push(...resumeTagsFor(r.name));
+
           return {
             id: r.name,
             title: humanizeName(r.name),
@@ -1490,10 +1697,13 @@
             forks: r.forks_count,
             updated: r.pushed_at,
             github: r.html_url,
+            liveUrl: r.homepage && r.homepage.trim() ? r.homepage.trim() : null,
             images: KNOWN_IMAGES[r.name] || [],
           };
         });
         projectsLoaded = true;
+        const projTile = document.getElementById("projectsTilePreview");
+        if (projTile) projTile.textContent = projects.length ? `${projects.length} shown from GitHub` : "No projects found";
       } catch (err) {
         projectsError = true;
         projectsLoaded = true;
@@ -1502,6 +1712,10 @@
       buildSkillCatalog();
       if (state.type === "projects" || state.type === "skills") render();
 
+      // Portfolio's own repo activity still counts toward GitHub
+      // Activity (it's real, legitimate contribution history) even
+      // though it's filtered out of the Projects showcase above —
+      // those are deliberately different concerns.
       const oneYearAgo = Date.now() - 365 * 24 * 60 * 60 * 1000;
       ghData.activeRepos = repos.filter((r) => new Date(r.pushed_at).getTime() > oneYearAgo).length;
 
@@ -1515,26 +1729,43 @@
         if (r.language) languageCounts[r.language] = (languageCounts[r.language] || 0) + 1;
       });
 
-      await Promise.all(
-        reposToCheck.map(async (repo) => {
-          try {
-            const statsRes = await fetch(`https://api.github.com/repos/${GITHUB_USER}/${repo.name}/stats/commit_activity`);
-            if (statsRes.status !== 200) return;
-            const weeks = await statsRes.json();
-            if (!Array.isArray(weeks)) return;
-            weeks.slice(-52).forEach((week, wi) => {
-              if (!week || !Array.isArray(week.days)) return;
-              week.days.forEach((count, di) => {
-                weeksMatrix[wi][di] += count;
-                totalCommits += count;
+      async function fetchCommitActivity(repoNames) {
+        let loaded = 0;
+        await Promise.all(
+          repoNames.map(async (name) => {
+            try {
+              const statsRes = await fetch(`https://api.github.com/repos/${GITHUB_USER}/${name}/stats/commit_activity`);
+              if (statsRes.status !== 200) return;
+              const weeks = await statsRes.json();
+              if (!Array.isArray(weeks)) return;
+              weeks.slice(-52).forEach((week, wi) => {
+                if (!week || !Array.isArray(week.days)) return;
+                week.days.forEach((count, di) => {
+                  weeksMatrix[wi][di] += count;
+                  totalCommits += count;
+                });
               });
-            });
-            repoStatsLoaded++;
-          } catch (err) {
-            // skip
-          }
-        }),
-      );
+              loaded++;
+            } catch (err) {
+              // skip
+            }
+          }),
+        );
+        return loaded;
+      }
+
+      repoStatsLoaded += await fetchCommitActivity(reposToCheck.map((r) => r.name));
+
+      // GitHub returns 202 ("still computing") the first time a repo's
+      // stats are requested, not a real zero. If nothing loaded on the
+      // first pass, retry once after a short wait rather than assuming
+      // the account has no commit activity.
+      if (repoStatsLoaded === 0 && reposToCheck.length > 0) {
+        await new Promise((resolve) => setTimeout(resolve, 2500));
+        repoStatsLoaded += await fetchCommitActivity(reposToCheck.map((r) => r.name));
+      }
+
+      ghData.commitDataAvailable = repoStatsLoaded > 0;
 
       ghData.weeksMatrix = weeksMatrix;
       ghData.totalCommits = totalCommits;
@@ -1604,7 +1835,7 @@
       const tilePreview = document.getElementById("ghTilePreview");
       if (tilePreview) {
         tilePreview.textContent = ghData.profile
-          ? `${ghData.profile.public_repos} repos · ${ghData.currentStreak}d streak`
+          ? `${ghData.profile.public_repos} repos · ${ghData.commitDataAvailable ? ghData.currentStreak + "d streak" : "activity syncing"}`
           : "Live data unavailable";
       }
       if (state.type === "github") render();
