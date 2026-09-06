@@ -40,6 +40,59 @@ const emailCSS = `
   .footer { border-top: 1px solid #e5e7eb; padding-top: 20px; margin-top: 30px; text-align: center; font-size: 12px; color: #6b7280; }
 `;
 
+const getClientIP = (req) => {
+  return (
+    req.headers["cf-connecting-ip"] ||
+    req.headers["x-forwarded-for"]?.split(",")[0] ||
+    req.headers["x-real-ip"] ||
+    req.socket.remoteAddress ||
+    "Unknown"
+  ).trim();
+};
+
+const parseUserAgent = (ua) => {
+  if (!ua) return { browser: "Unknown", os: "Unknown", device: "Unknown" };
+
+  let browser = "Unknown",
+    os = "Unknown",
+    device = "Desktop";
+
+  // Browser detection
+  if (/Chrome|CriOS/i.test(ua) && !/Edge|Edg|OPR/i.test(ua)) {
+    browser = "Chrome";
+  } else if (/Safari/i.test(ua) && !/Chrome|CriOS/i.test(ua)) {
+    browser = "Safari";
+  } else if (/Firefox/i.test(ua)) {
+    browser = "Firefox";
+  } else if (/Edge|Edg/i.test(ua)) {
+    browser = "Edge";
+  } else if (/OPR/i.test(ua)) {
+    browser = "Opera";
+  }
+
+  // OS detection
+  if (/Windows/i.test(ua)) {
+    os = "Windows";
+  } else if (/Mac/i.test(ua)) {
+    os = "macOS";
+  } else if (/Linux/i.test(ua)) {
+    os = "Linux";
+  } else if (/Android/i.test(ua)) {
+    os = "Android";
+  } else if (/iPhone|iPad|iPod/i.test(ua)) {
+    os = "iOS";
+  }
+
+  // Device detection
+  if (/Mobile|Android|iPhone|iPad|iPod/i.test(ua)) {
+    device = "Mobile";
+  } else if (/Tablet|iPad/i.test(ua)) {
+    device = "Tablet";
+  }
+
+  return { browser, os, device };
+};
+
 module.exports = async (req, res) => {
   setCORSHeaders(res);
   
@@ -52,13 +105,13 @@ module.exports = async (req, res) => {
   }
 
   try {
-    const { userAgent, referrer, timestamp } = req.body;
+    const { referrer } = req.body;
 
-    if (!timestamp || typeof timestamp !== "string") {
-      return res.status(400).json({ error: "Invalid request data" });
-    }
-
-    const sanitizedUserAgent = (userAgent || "Unknown").substring(0, 200);
+    // Capture actual server-side data
+    const visitTime = new Date();
+    const clientIP = getClientIP(req);
+    const userAgentString = req.headers["user-agent"] || "Unknown";
+    const { browser, os, device } = parseUserAgent(userAgentString);
     const sanitizedReferrer = (referrer || "Direct Visit").substring(0, 200);
 
     const mailOptions = {
@@ -72,15 +125,40 @@ module.exports = async (req, res) => {
   <div class="container">
     <div class="header"><h1>Portfolio Visit</h1></div>
     <div class="section">
-      <div class="label">Visit Time</div>
-      <div class="value">${new Date(timestamp).toLocaleString()}</div>
+      <div class="label">Visit Date & Time</div>
+      <div class="value">${visitTime.toLocaleString("en-US", {
+        weekday: "long",
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+        timeZoneName: "short",
+      })}</div>
     </div>
     <div class="section">
-      <div class="label">Device Information</div>
-      <div class="value">${sanitizedUserAgent}</div>
+      <div class="label">Visitor IP Address</div>
+      <div class="value">${clientIP}</div>
     </div>
     <div class="section">
-      <div class="label">Source</div>
+      <div class="label">Browser</div>
+      <div class="value">${browser}</div>
+    </div>
+    <div class="section">
+      <div class="label">Operating System</div>
+      <div class="value">${os}</div>
+    </div>
+    <div class="section">
+      <div class="label">Device Type</div>
+      <div class="value">${device}</div>
+    </div>
+    <div class="section">
+      <div class="label">Full User Agent</div>
+      <div class="value">${userAgentString.substring(0, 300)}</div>
+    </div>
+    <div class="section">
+      <div class="label">Referrer/Source</div>
       <div class="value">${sanitizedReferrer}</div>
     </div>
     <div class="footer">
