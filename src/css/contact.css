@@ -1,0 +1,25 @@
+.contact-action-list { display: flex; flex-direction: column; gap: 10px; }
+
+.contact-action {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 18px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  transition: border-color 0.2s, background 0.2s;
+}
+
+.contact-action:hover { border-color: var(--accent); background: var(--surface-hover); }
+
+.contact-action .ca-label {
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  color: var(--text-soft);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.contact-action .ca-value { font-size: 0.95rem; color: var(--text-primary); margin-top: 2px; }
+.contact-action .ca-arrow { color: var(--text-soft); font-size: 1.1rem; }

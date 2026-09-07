@@ -1,0 +1,74 @@
+.github-heatmap { display: flex; gap: 3px; overflow-x: auto; padding-bottom: 6px; }
+.github-heatmap .week { display: flex; flex-direction: column; gap: 3px; }
+.github-heatmap .day { width: 10px; height: 10px; border-radius: 2px; background: var(--border); }
+
+.gh-legend { display: flex; align-items: center; gap: 6px; font-size: 0.72rem; color: var(--text-soft); margin-top: 10px; }
+.gh-legend .legend-box { width: 10px; height: 10px; border-radius: 2px; }
+
+.gh-stat-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+
+.gh-stat {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 16px;
+  text-align: center;
+}
+
+.gh-stat.primary { border-color: var(--accent-glow); background: rgba(59, 130, 246, 0.06); }
+
+.gh-stat-value { font-family: var(--mono); font-size: 1.25rem; color: var(--accent); font-weight: 500; }
+.gh-stat-label { font-size: 0.7rem; color: var(--text-soft); margin-top: 4px; }
+
+.gh-secondary-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+
+.gh-secondary-stat {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 12px 10px;
+  text-align: center;
+}
+
+.gh-secondary-value { font-family: var(--mono); font-size: 1rem; color: var(--text-primary); }
+.gh-secondary-label { font-size: 0.65rem; color: var(--text-soft); margin-top: 3px; }
+
+.gh-detail-btn-wrap { margin-top: 20px; }
+
+.recent-activity-list { display: flex; flex-direction: column; gap: 2px; }
+
+.recent-activity-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding: 10px 2px;
+  border-bottom: 1px solid var(--border);
+  gap: 12px;
+}
+
+.recent-activity-item:last-child { border-bottom: none; }
+
+.recent-activity-repo {
+  font-size: 0.86rem;
+  color: var(--text-primary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.recent-activity-meta { font-family: var(--mono); font-size: 0.72rem; color: var(--text-soft); flex-shrink: 0; }
+
+.lang-list { display: flex; flex-wrap: wrap; gap: 8px; }
+.lang-pill {
+  font-family: var(--mono);
+  font-size: 0.76rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  padding: 6px 12px;
+  border-radius: 999px;
+  color: var(--text-muted);
+}
+
+@media (max-width: 900px) {
+  .gh-secondary-row { grid-template-columns: repeat(2, 1fr); }
+}

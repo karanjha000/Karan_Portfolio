@@ -1,0 +1,111 @@
+:root {
+  --bg: #0a0e17;
+  --bg-soft: #0f1522;
+  --surface: rgba(255, 255, 255, 0.04);
+  --surface-hover: rgba(255, 255, 255, 0.07);
+  --border: rgba(255, 255, 255, 0.09);
+  --border-strong: rgba(255, 255, 255, 0.16);
+  --text-primary: #e8edf4;
+  --text-muted: #9aa5b5;
+  --text-soft: #5f6b7d;
+  --accent: #3b82f6;
+  --accent-glow: rgba(59, 130, 246, 0.35);
+  --mono: "JetBrains Mono", monospace;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html, body { height: 100%; }
+
+body {
+  font-family: "Inter", sans-serif;
+  color: var(--text-primary);
+  background: var(--bg);
+  overflow: hidden;
+}
+
+a { text-decoration: none; color: inherit; }
+button { font-family: inherit; }
+h1, h2, h3 { font-family: "Playfair Display", serif; }
+
+.bg-grid {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.025) 1px, transparent 1px);
+  background-size: 48px 48px;
+  mask-image: radial-gradient(ellipse at 30% 20%, black 0%, transparent 75%);
+}
+
+/* Buttons — minimal, consistent across Hero, panels, and modals */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px 22px;
+  border-radius: 6px;
+  font-weight: 500;
+  font-size: 0.88rem;
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease, background 0.15s ease;
+}
+
+.btn-primary { background: var(--accent); color: #ffffff; }
+.btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 24px var(--accent-glow); }
+
+.btn-outline { background: transparent; color: var(--text-primary); border-color: var(--border-strong); }
+.btn-outline:hover { border-color: var(--accent); }
+
+.btn-sm { padding: 9px 16px; font-size: 0.82rem; }
+
+.cta-group { display: flex; gap: 12px; margin-bottom: 26px; flex-wrap: wrap; }
+
+/* Shared tag chip — used by project tags and skill detail rows */
+.skill-pill {
+  font-family: var(--mono);
+  font-size: 0.82rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--text-primary);
+  padding: 8px 14px;
+  border-radius: 6px;
+}
+
+/* Shared label/value row — used by Education and Experience panels */
+.edu-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 16px 0;
+  border-bottom: 1px solid var(--border);
+}
+.edu-row:last-child { border-bottom: none; }
+
+.edu-row .edu-label {
+  font-family: var(--mono);
+  font-size: 0.75rem;
+  color: var(--text-soft);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  min-width: 110px;
+}
+
+.edu-row .edu-value { font-size: 0.95rem; color: var(--text-primary); text-align: right; }
+
+/* Shared small section heading — used inside GitHub and Experience panels */
+.gh-section-label {
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  color: var(--text-soft);
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  margin: 22px 0 10px;
+}
+.gh-section-label:first-child { margin-top: 0; }
+
+@media (max-width: 900px) {
+  body { overflow: auto; }
+}

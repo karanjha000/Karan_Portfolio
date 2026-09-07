@@ -1,0 +1,91 @@
+.dashboard {
+  position: relative;
+  z-index: 5;
+  height: calc(100vh - 73px);
+  display: grid;
+  grid-template-columns: 1.15fr 0.85fr;
+  gap: 40px;
+  align-items: center;
+  padding: 0 4%;
+}
+
+.hero-content { max-width: 620px; }
+
+.eyebrow {
+  font-family: var(--mono);
+  font-size: 0.78rem;
+  color: var(--accent);
+  letter-spacing: 0.08em;
+  margin-bottom: 10px;
+}
+
+.hero-content h1 {
+  font-size: 3.1rem;
+  font-weight: 800;
+  line-height: 1.08;
+  margin-bottom: 6px;
+}
+
+.role-line { font-size: 1.3rem; font-weight: 600; color: var(--text-primary); margin-bottom: 8px; }
+
+.tagline {
+  font-size: 0.98rem;
+  font-weight: 300;
+  color: var(--text-muted);
+  margin-bottom: 20px;
+}
+
+.about-blurb {
+  font-size: 0.92rem;
+  color: var(--text-muted);
+  line-height: 1.65;
+  max-width: 480px;
+  margin-bottom: 26px;
+  padding-left: 14px;
+  border-left: 2px solid var(--border-strong);
+}
+
+.quick-stack { font-family: var(--mono); font-size: 0.78rem; color: var(--text-soft); }
+.quick-stack span:not(:last-child)::after { content: "·"; margin: 0 8px; color: var(--border-strong); }
+
+.tile-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+
+.tile {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 20px;
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 0.2s, background 0.2s, transform 0.2s;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-height: 118px;
+}
+
+.tile:hover {
+  border-color: var(--border-strong);
+  background: var(--surface-hover);
+  transform: translateY(-3px);
+}
+
+.tile-icon { font-family: var(--mono); font-size: 0.7rem; color: var(--accent); letter-spacing: 0.06em; }
+.tile-title { font-size: 1rem; font-weight: 600; color: var(--text-primary); }
+.tile-preview { font-size: 0.78rem; color: var(--text-soft); font-family: var(--mono); margin-top: auto; }
+
+@media (max-width: 980px) {
+  .dashboard {
+    grid-template-columns: 1fr;
+    height: auto;
+    overflow-y: auto;
+    padding: 30px 6% 50px;
+  }
+  .tile-grid { margin-top: 10px; }
+  .hero-content h1 { font-size: 2.3rem; }
+}
+
+@media (max-width: 500px) {
+  .hero-content h1 { font-size: 1.9rem; }
+  .cta-group { flex-direction: column; align-items: stretch; }
+}
