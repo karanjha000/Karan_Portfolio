@@ -1,8 +1,7 @@
 {
   "name": "portfolio-karan-jha",
   "version": "1.0.0",
-  "description": "Java Developer Portfolio with auto-scrolling carousels, contact form, and responsive design",
-  "main": "api/contact.js",
+  "description": "Karan Jha's developer portfolio — a dark, single-screen interactive dashboard with live GitHub project/activity data, built with Vite and vanilla JS, with Vercel serverless functions for the contact form.",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
@@ -11,16 +10,18 @@
   "keywords": [
     "portfolio",
     "contact-form",
-    "java-developer"
+    "backend-developer",
+    "java"
   ],
   "author": "Karan Jha",
   "license": "ISC",
   "engines": {
-    "node": ">=14.0.0"
+    "node": "^20.19.0 || >=22.12.0"
   },
   "dependencies": {
-    "dotenv": "^17.2.3",
-    "nodemailer": "^10.0.0",
+    "nodemailer": "^10.0.0"
+  },
+  "devDependencies": {
     "vite": "^8.2.2"
   }
 }

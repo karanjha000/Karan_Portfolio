@@ -5,11 +5,10 @@ function renderResumeViewer() {
   getPanelBody().innerHTML = `
     <div style="height:100%; display:flex; flex-direction:column;">
       <iframe
-        src="resume.pdf"
+        src="/resume.pdf"
         title="Karan Jha Resume"
         style="width:100%; flex:1; min-height:420px; border:1px solid var(--border); border-radius:8px; background:#fff;"
       ></iframe>
-      <a href="resume.pdf" download class="btn btn-outline btn-sm" style="margin-top:16px; align-self:flex-start;">Download PDF</a>
     </div>
   `;
 }

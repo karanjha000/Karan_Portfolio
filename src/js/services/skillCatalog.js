@@ -1,5 +1,5 @@
 import { skillsData } from "../data/skills.js";
-import { TECH_ALIASES, CATEGORY_MAP } from "../data/config.js";
+import { TECH_ALIASES, CATEGORY_MAP, SKILL_DETAILS } from "../data/config.js";
 
 function normalizeTech(raw) {
   const key = raw.trim().toLowerCase();
@@ -25,7 +25,9 @@ export function buildSkillCatalog(projects) {
 
   function addSkill(name, category, projectId, source) {
     const key = name.toLowerCase();
-    if (!catalog[key]) catalog[key] = { name, category, source, projectIds: new Set() };
+    if (!catalog[key]) {
+      catalog[key] = { name, category, source, projectIds: new Set(), details: SKILL_DETAILS[key] || null };
+    }
     if (source === "github" && catalog[key].source === "resume") catalog[key].source = "both";
     if (projectId) catalog[key].projectIds.add(projectId);
   }

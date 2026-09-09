@@ -5,8 +5,8 @@
 // Currently unused because start.js never issues a session (it's honest
 // about not being implemented yet).
 
-export default function handler(req, res) {
+module.exports = function handler(req, res) {
   res.status(501).json({
     message: "Preview backend is not yet configured for this project's stack.",
   });
-}
+};

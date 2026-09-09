@@ -20,8 +20,8 @@
 // src/js/services/previewService.js, which runs those live in the
 // visitor's own browser via WebContainers, no backend required.
 
-export default function handler(req, res) {
+module.exports = function handler(req, res) {
   res.status(501).json({
     message: "Preview backend is not yet configured for this project's stack.",
   });
-}
+};

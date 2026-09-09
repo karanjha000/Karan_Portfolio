@@ -113,18 +113,39 @@ async function fetchCommitActivityFor(repoNames, weeksMatrix, addCommits) {
   const [pullRequests, issues] = await Promise.all([searchAuthored("pr"), searchAuthored("issue")]);
 
   const events = await getPublicEvents();
+  // GitHub's events API caps/truncates the `commits` array on a PushEvent
+  // payload, so payload.commits.length can read as 0 (or lower than
+  // reality) even when real commits were pushed. payload.distinct_size /
+  // payload.size are the authoritative counts GitHub reports for that
+  // push and must be preferred — falling back to commits.length only
+  // when neither is present, never defaulting a missing count to 0.
   const recentActivity = events
     .filter((e) => e.type === "PushEvent")
     .slice(0, 5)
-    .map((e) => ({
-      repo: e.repo.name.split("/")[1] || e.repo.name,
-      commits: e.payload?.commits?.length || 0,
-      date: e.created_at,
-    }));
+    .map((e) => {
+      const p = e.payload || {};
+      const commitCount =
+        typeof p.distinct_size === "number"
+          ? p.distinct_size
+          : typeof p.size === "number"
+            ? p.size
+            : Array.isArray(p.commits)
+              ? p.commits.length
+              : 0;
+      return {
+        repo: e.repo.name.split("/")[1] || e.repo.name,
+        commits: commitCount,
+        date: e.created_at,
+      };
+    });
 
   setGithubData({
     profile, repos, weeksMatrix, totalCommits, repoStatsLoaded,
     commitDataAvailable: repoStatsLoaded > 0,
+    // profile and repos both come back empty/null on total API failure
+    // (rate limit, network error, etc.) — that's a genuine "unavailable"
+    // state and must be shown as such, never silently rendered as zeros.
+    apiUnavailable: !profile && repos.length === 0,
     languageCounts, currentStreak: current, longestStreak: longest,
     activeRepos, pullRequests, issues, recentActivity,
   });

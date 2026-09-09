@@ -66,10 +66,14 @@ function renderSkillsPanel() {
       return;
     }
     const projectRows = [...skill.projectIds].map((id) => projectsRef.find((p) => p.id === id)).filter(Boolean);
+    const detailsHtml = skill.details
+      ? `<div class="skill-detail-tags">${skill.details.map((d) => `<span class="skill-pill">${d}</span>`).join("")}</div>`
+      : "";
     body.innerHTML = `
       <p style="color:var(--text-soft); font-size:0.8rem; margin-bottom:16px;">
         ${skill.category} · ${projectRows.length} project${projectRows.length === 1 ? "" : "s"} using this
       </p>
+      ${detailsHtml}
       <div class="skill-vertical-list">${
         projectRows
           .map(

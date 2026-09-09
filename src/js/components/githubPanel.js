@@ -3,7 +3,7 @@ import { registerPanel, getPanelBody, setPanelTitle, state, render } from "./pan
 export let ghData = {
   profile: null, repos: [], weeksMatrix: null, totalCommits: 0, repoStatsLoaded: 0,
   languageCounts: {}, currentStreak: 0, longestStreak: 0, commitDataAvailable: false,
-  activeRepos: 0, pullRequests: null, issues: null, recentActivity: [],
+  activeRepos: 0, pullRequests: null, issues: null, recentActivity: [], apiUnavailable: false,
 };
 export let ghLoaded = false;
 
@@ -49,6 +49,19 @@ function renderGithubPanel() {
   if (!ghLoaded) {
     setPanelTitle("GitHub Activity");
     body.innerHTML = `<p style="color:var(--text-muted); font-size:0.9rem;">Loading live GitHub data…</p>`;
+    return;
+  }
+
+  if (ghData.apiUnavailable) {
+    setPanelTitle("GitHub Activity");
+    body.innerHTML = `
+      <p style="color:var(--text-muted); font-size:0.9rem; line-height:1.6;">
+        GitHub data is unavailable right now (the API request failed or was rate-limited).
+        This isn't zero activity — it's just unreachable at the moment. Please try again shortly,
+        or view the profile directly on
+        <a href="https://github.com/karanjha000" target="_blank" rel="noreferrer" style="color:var(--accent);">GitHub</a>.
+      </p>
+    `;
     return;
   }
 

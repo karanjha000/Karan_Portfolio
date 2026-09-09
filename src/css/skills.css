@@ -45,3 +45,5 @@
 @media (max-width: 900px) {
   .category-grid { grid-template-columns: 1fr; }
 }
+
+.skill-detail-tags { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }

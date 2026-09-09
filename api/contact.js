@@ -64,7 +64,7 @@ module.exports = async (req, res) => {
   }
 
   try {
-    const { name, email, message, timestamp } = req.body;
+    const { name, email, subject, message, timestamp } = req.body;
 
     if (!name || typeof name !== "string" || !email || typeof email !== "string" || !message || typeof message !== "string") {
       return res.status(400).json({ error: "Missing or invalid required fields" });
@@ -76,6 +76,7 @@ module.exports = async (req, res) => {
 
     const sanitizedName = name.trim().substring(0, 100);
     const sanitizedEmail = email.trim().toLowerCase();
+    const sanitizedSubject = (typeof subject === "string" ? subject.trim() : "").substring(0, 150);
     const sanitizedMessage = message.trim().substring(0, 5000);
 
     if (!sanitizedName || !sanitizedMessage) {
@@ -86,7 +87,7 @@ module.exports = async (req, res) => {
       from: `"${sanitizedName}" <${process.env.EMAIL_USER}>`,
       to: process.env.RECIPIENT_EMAIL,
       replyTo: sanitizedEmail,
-      subject: `Message from ${sanitizedName}`,
+      subject: sanitizedSubject ? `Portfolio: ${sanitizedSubject}` : `Message from ${sanitizedName}`,
       html: `<!DOCTYPE html>
 <html>
 <head><style>${emailCSS}</style></head>
@@ -101,6 +102,10 @@ module.exports = async (req, res) => {
       <div class="label">Contact Email</div>
       <div class="value"><a href="mailto:${sanitizedEmail}" style="color: #007bff; text-decoration: none;">${sanitizedEmail}</a></div>
     </div>
+    ${sanitizedSubject ? `<div class="section">
+      <div class="label">Subject</div>
+      <div class="value">${escapeHTML(sanitizedSubject)}</div>
+    </div>` : ""}
     <div class="section">
       <div class="label">Message</div>
       <div class="message-box">
