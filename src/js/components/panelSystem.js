@@ -5,6 +5,7 @@ export const panelEyebrows = {
   education: "04 / EDUCATION",
   github: "05 / GITHUB",
   contact: "06 / CONTACT",
+  getintouch: "07 / GET IN TOUCH",
   resumeview: "// RESUME",
 };
 

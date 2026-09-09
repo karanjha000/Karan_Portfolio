@@ -8,6 +8,7 @@ import "./components/skillsPanel.js";
 import "./components/experiencePanel.js";
 import "./components/educationPanel.js";
 import "./components/contactPanel.js";
+import "./components/getInTouchPanel.js";
 import "./components/resumeViewer.js";
 import "./components/githubPanel.js";
 
