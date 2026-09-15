@@ -1,6 +1,6 @@
 import { GITHUB_USER } from "../data/config.js";
 
-const BASE = "/api/github";
+const BASE = "/api/github.js";
 
 async function ghFetch(path) {
   try {
