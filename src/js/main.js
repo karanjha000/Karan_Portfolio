@@ -17,7 +17,7 @@ import { setProjects, setProjectsError } from "./components/projectsPanel.js";
 import { setSkillsData } from "./components/skillsPanel.js";
 import { setExperienceProjects } from "./components/experiencePanel.js";
 
-import { getProfile, getRepos, getCommitActivity, getPublicEvents, searchAuthored } from "./services/githubApi.js";
+import { getProfile, getRepos, getCommitActivity, getPublicEvents, searchAuthored, compareCommits } from "./services/githubApi.js";
 import { buildProjects } from "./services/projectBuilder.js";
 import { buildSkillCatalog } from "./services/skillCatalog.js";
 
@@ -113,34 +113,25 @@ async function fetchCommitActivityFor(repoNames, weeksMatrix, addCommits) {
 
   const [pullRequests, issues] = await Promise.all([searchAuthored("pr"), searchAuthored("issue")]);
 
-    const events = await getPublicEvents();
-    // GitHub's events API caps/truncates the `commits` array on a PushEvent
-    // payload, so payload.commits.length can undercount. `size` — the raw
-    // number of commits in that specific push — is what "Recent Activity"
-    // should show. `distinct_size` is NOT the same thing: it only counts
-    // commits new to the repo overall, so a push that fast-forwards/merges
-    // already-pushed commits onto another ref (a very common multi-branch
-    // workflow) legitimately reports distinct_size: 0 even though it's a
-    // completely real push — using it first made real activity look empty.
-    const recentActivity = events
-      .filter((e) => e.type === "PushEvent")
-      .slice(0, 5)
-      .map((e) => {
-        const p = e.payload || {};
-        const commitCount =
-          typeof p.size === "number"
-            ? p.size
-            : typeof p.distinct_size === "number"
-              ? p.distinct_size
-              : Array.isArray(p.commits)
-                ? p.commits.length
-                : 0;
-        return {
-          repo: e.repo.name.split("/")[1] || e.repo.name,
-          commits: commitCount,
-          date: e.created_at,
-        };
-      });
+     const events = await getPublicEvents();
+     // GitHub's public Events API no longer includes commit count/list
+     // fields on PushEvent payloads at all (confirmed against a live
+     // payload — only ref/before/head SHAs are present). The only
+     // reliable way to get an accurate count now is to diff before...head
+     // via the compare API. null means "couldn't be determined" and must
+     // be shown as such, never rendered as a false zero.
+     const pushEvents = events.filter((e) => e.type === "PushEvent").slice(0, 5);
+     const recentActivity = await Promise.all(
+       pushEvents.map(async (e) => {
+         const p = e.payload || {};
+         const commits = await compareCommits(e.repo.name, p.before, p.head);
+         return {
+           repo: e.repo.name.split("/")[1] || e.repo.name,
+           commits,
+           date: e.created_at,
+         };
+       }),
+     );
 
   setGithubData({
     profile, repos, weeksMatrix, totalCommits, repoStatsLoaded,

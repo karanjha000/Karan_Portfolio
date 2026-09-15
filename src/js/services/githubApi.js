@@ -58,6 +58,20 @@ export async function searchAuthored(type) {
   return typeof data.total_count === "number" ? data.total_count : null;
 }
 
+// GitHub's public Events API no longer includes any commit count/list
+// on PushEvent payloads (no size, distinct_size, or commits field —
+// only the before/head SHAs). Diffing before...head via the compare
+// API is now the only reliable way to get an accurate commit count.
+// repoFullName must be "owner/repo" (from event.repo.name) since a
+// push can be to a repo the user doesn't own (a collaborator push).
+export async function compareCommits(repoFullName, base, head) {
+  if (!base || !head || /^0+$/.test(base)) return null;
+  const res = await ghFetch(`repos/${repoFullName}/compare/${base}...${head}`);
+  if (!res || !res.ok) return null;
+  const data = await res.json();
+  return typeof data.total_commits === "number" ? data.total_commits : null;
+}
+
 export async function getRepoTree(repoName, branch = "main") {
   const res = await ghFetch(`repos/${GITHUB_USER}/${repoName}/git/trees/${branch}?recursive=1`);
   if (!res || !res.ok) return null;

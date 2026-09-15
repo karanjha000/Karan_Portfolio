@@ -95,7 +95,7 @@ function renderGithubPanel() {
           .map(
             (a) => `
             <div class="recent-activity-item">
-              <span class="recent-activity-repo">${a.repo} — ${a.commits} commit${a.commits === 1 ? "" : "s"}</span>
+              <span class="recent-activity-repo">${a.repo} — ${a.commits !== null ? `${a.commits} commit${a.commits === 1 ? "" : "s"}` : "pushed"}</span>
               <span class="recent-activity-meta">${timeAgo(a.date)}</span>
             </div>`,
           )
