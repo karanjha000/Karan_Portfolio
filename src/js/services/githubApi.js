@@ -1,6 +1,14 @@
 import { GITHUB_USER } from "../data/config.js";
 
-const BASE = "https://api.github.com";
+const BASE = "/api/github";
+
+async function ghFetch(path) {
+  try {
+    return await fetch(`${BASE}?path=${encodeURIComponent(path)}`);
+  } catch {
+    return null;
+  }
+}
 
 export async function getProfile() {
   try {

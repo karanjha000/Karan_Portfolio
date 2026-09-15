@@ -113,32 +113,34 @@ async function fetchCommitActivityFor(repoNames, weeksMatrix, addCommits) {
 
   const [pullRequests, issues] = await Promise.all([searchAuthored("pr"), searchAuthored("issue")]);
 
-  const events = await getPublicEvents();
-  // GitHub's events API caps/truncates the `commits` array on a PushEvent
-  // payload, so payload.commits.length can read as 0 (or lower than
-  // reality) even when real commits were pushed. payload.distinct_size /
-  // payload.size are the authoritative counts GitHub reports for that
-  // push and must be preferred — falling back to commits.length only
-  // when neither is present, never defaulting a missing count to 0.
-  const recentActivity = events
-    .filter((e) => e.type === "PushEvent")
-    .slice(0, 5)
-    .map((e) => {
-      const p = e.payload || {};
-      const commitCount =
-        typeof p.distinct_size === "number"
-          ? p.distinct_size
-          : typeof p.size === "number"
+    const events = await getPublicEvents();
+    // GitHub's events API caps/truncates the `commits` array on a PushEvent
+    // payload, so payload.commits.length can undercount. `size` — the raw
+    // number of commits in that specific push — is what "Recent Activity"
+    // should show. `distinct_size` is NOT the same thing: it only counts
+    // commits new to the repo overall, so a push that fast-forwards/merges
+    // already-pushed commits onto another ref (a very common multi-branch
+    // workflow) legitimately reports distinct_size: 0 even though it's a
+    // completely real push — using it first made real activity look empty.
+    const recentActivity = events
+      .filter((e) => e.type === "PushEvent")
+      .slice(0, 5)
+      .map((e) => {
+        const p = e.payload || {};
+        const commitCount =
+          typeof p.size === "number"
             ? p.size
-            : Array.isArray(p.commits)
-              ? p.commits.length
-              : 0;
-      return {
-        repo: e.repo.name.split("/")[1] || e.repo.name,
-        commits: commitCount,
-        date: e.created_at,
-      };
-    });
+            : typeof p.distinct_size === "number"
+              ? p.distinct_size
+              : Array.isArray(p.commits)
+                ? p.commits.length
+                : 0;
+        return {
+          repo: e.repo.name.split("/")[1] || e.repo.name,
+          commits: commitCount,
+          date: e.created_at,
+        };
+      });
 
   setGithubData({
     profile, repos, weeksMatrix, totalCommits, repoStatsLoaded,

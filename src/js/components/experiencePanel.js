@@ -17,7 +17,7 @@ function renderExperiencePanel() {
     <div class="edu-row"><span class="edu-label">Duration</span><span class="edu-value">${experienceData.duration}</span></div>
     <div class="edu-row"><span class="edu-label">Focus Areas</span><span class="edu-value">${experienceData.focusAreas.join(" & ")}</span></div>
 
-    <p class="gh-section-label">Project Under This Partnership</p>
+    <p class="gh-section-label">Project Under This Training</p>
     <div class="edu-row"><span class="edu-label">Project</span><span class="edu-value">${proj.name}</span></div>
     <div class="edu-row"><span class="edu-label">Type</span><span class="edu-value">${proj.type}</span></div>
     <div class="edu-row"><span class="edu-label">Role</span><span class="edu-value">${proj.role}</span></div>

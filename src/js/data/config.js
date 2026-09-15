@@ -1,7 +1,7 @@
 export const GITHUB_USER = "karanjha000";
 
 export const PRIORITY_MATCHERS = [
-  "skillconnect", "equinox", "chronoclass", "purelane", "shopify",
+  "skillconnect", "equinox", "chronoclass","Manjari-Web-Services", "purelane", "shopify",
   "bookpilot", "book_pilot", "book-pilot",
 ];
 
