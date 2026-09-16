@@ -63,9 +63,16 @@ function keysFromSpringConfig(text) {
 
 const CANDIDATE_FILES = [
   { path: "package.json", parse: keysFromPackageJson },
+  { path: "client/package.json", parse: keysFromPackageJson },
+  { path: "frontend/package.json", parse: keysFromPackageJson },
+  { path: "server/package.json", parse: keysFromPackageJson },
+  { path: "backend/package.json", parse: keysFromPackageJson },
   { path: "pom.xml", parse: keysFromPom },
   { path: "build.gradle", parse: keysFromGradle },
+  { path: "build.gradle.kts", parse: keysFromGradle },
   { path: "requirements.txt", parse: keysFromRequirementsTxt },
+  { path: "backend/requirements.txt", parse: keysFromRequirementsTxt },
+  { path: "server/requirements.txt", parse: keysFromRequirementsTxt },
   { path: "application.properties", parse: keysFromSpringConfig },
   { path: "src/main/resources/application.properties", parse: keysFromSpringConfig },
   { path: "src/main/resources/application.yml", parse: keysFromSpringConfig },
@@ -88,6 +95,7 @@ export async function detectProjectTech(repoName, defaultBranch) {
     if (paths.some((p) => p === "dockerfile" || p.endsWith("/dockerfile"))) found.add("docker");
     if (paths.some((p) => p.includes("docker-compose"))) found.add("docker");
     if (paths.some((p) => p.startsWith(".github/workflows/"))) found.add("github-actions");
+    if (paths.some((p) => p === "manage.py" || p.endsWith("/manage.py"))) found.add("django");
   }
 
   return [...found];

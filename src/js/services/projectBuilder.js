@@ -4,33 +4,33 @@ import {
 import { getLanguages } from "./githubApi.js";
 import { detectProjectTech } from "./techDetector.js";
 
-// Exclusion is deliberately minimal and explicit: forks (not original
-// work), the GitHub profile-README repo (named exactly the username —
-// not a project), and anything in EXCLUDE_SUBSTRINGS (an explicit,
-// maintainable blocklist). There is NO "looks too small/empty" quality
-// filter here — that kind of implicit heuristic is exactly what can
-// silently hide a legitimate newly created repo (e.g. one with no
-// description yet) from the showcase, which defeats the point of
-// fetching dynamically. If a repo needs to be hidden, add it to
-// EXCLUDE_SUBSTRINGS in config.js instead of guessing at "triviality".
 function isLikelyRealProject(r) {
   const n = r.name.toLowerCase();
   if (n === GITHUB_USER.toLowerCase()) return false;
   if (EXCLUDE_SUBSTRINGS.some((x) => n.includes(x))) return false;
-  if (r.fork) return false;
   return true;
 }
 
+// Strips all non-alphanumeric characters before comparing, so a repo
+// name's separator style (underscores, hyphens, or none) never causes
+// a real match to be missed — "Book_Pilot_Manager" and the lookup key
+// "bookpilot" both normalize to a form where the substring check works
+// correctly (this was the exact bug that made BookPilot's resume-
+// verified tags, including MySQL, silently fail to attach).
+function normalizeForMatch(s) {
+  return s.toLowerCase().replace(/[^a-z0-9]/g, "");
+}
+
 function priorityIndex(r) {
-  const n = r.name.toLowerCase();
-  const idx = PRIORITY_MATCHERS.findIndex((m) => n.includes(m));
+  const n = normalizeForMatch(r.name);
+  const idx = PRIORITY_MATCHERS.findIndex((m) => n.includes(normalizeForMatch(m)));
   return idx === -1 ? PRIORITY_MATCHERS.length : idx;
 }
 
 function resumeTagsFor(repoName) {
-  const n = repoName.toLowerCase();
+  const n = normalizeForMatch(repoName);
   for (const [key, tags] of Object.entries(RESUME_VERIFIED_TAGS)) {
-    if (n.includes(key)) return tags;
+    if (n.includes(normalizeForMatch(key))) return tags;
   }
   return [];
 }
