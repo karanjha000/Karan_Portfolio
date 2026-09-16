@@ -1,24 +1,23 @@
 import { skillsData } from "../data/skills.js";
-import { TECH_ALIASES, CATEGORY_MAP, SKILL_DETAILS } from "../data/config.js";
+import { TECH_INFO, SKILL_DETAILS } from "../data/config.js";
 
-function normalizeTech(raw) {
-  const key = raw.trim().toLowerCase();
-  if (TECH_ALIASES[key]) return TECH_ALIASES[key];
-  return raw.length <= 4 ? raw.toUpperCase() : raw.replace(/\b\w/g, (c) => c.toUpperCase());
-}
-
-function categorize(tech) {
-  for (const [cat, list] of Object.entries(CATEGORY_MAP)) {
-    if (list.some((x) => x.toLowerCase() === tech.toLowerCase())) return cat;
-  }
-  return "From GitHub";
+// Every incoming tag is looked up directly in TECH_INFO by its
+// normalized key. If it's not a recognized real technology, it is
+// DROPPED — not shown under a generic catch-all category. This is what
+// keeps repo topics, README words, and project-description fragments
+// (e.g. "library-management-system", "booking-system") out of Skills:
+// they simply have no entry here, so they never become a skill.
+function resolveTech(raw) {
+  const key = raw.trim().toLowerCase().replace(/\s+/g, "-");
+  return TECH_INFO[key] || null;
 }
 
 /**
  * Merges resume skills (source of truth, always visible even with zero
- * detected project usage) with technologies detected from live project
- * tags. Each entry tracks which project IDs it was found in, so the UI
- * can show "Java — 3 projects" and list them.
+ * detected project usage) with technologies genuinely detected from
+ * each project's dependency-file scan (see techDetector.js) and real
+ * per-repo language breakdown. Each entry tracks which project IDs it
+ * was found in, so the UI can show "Java — 3 projects" and list them.
  */
 export function buildSkillCatalog(projects) {
   const catalog = {};
@@ -38,8 +37,9 @@ export function buildSkillCatalog(projects) {
 
   projects.forEach((p) => {
     p.tags.forEach((t) => {
-      const norm = normalizeTech(t);
-      addSkill(norm, categorize(norm), p.id, "github");
+      const resolved = resolveTech(t);
+      if (!resolved) return; // not a genuine technology — discard, don't guess a category
+      addSkill(resolved.name, resolved.category, p.id, "github");
     });
   });
 

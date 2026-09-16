@@ -2,17 +2,22 @@ import {
   PRIORITY_MATCHERS, EXCLUDE_SUBSTRINGS, RESUME_VERIFIED_TAGS, KNOWN_IMAGES, GITHUB_USER,
 } from "../data/config.js";
 import { getLanguages } from "./githubApi.js";
+import { detectProjectTech } from "./techDetector.js";
 
-// This portfolio's own repo and the GitHub profile-README repo (named
-// exactly the username) are excluded — they're not development projects.
-// Trivial/empty repos (no description, no language, tiny size) are
-// filtered too, so the showcase isn't "every public repo".
+// Exclusion is deliberately minimal and explicit: forks (not original
+// work), the GitHub profile-README repo (named exactly the username —
+// not a project), and anything in EXCLUDE_SUBSTRINGS (an explicit,
+// maintainable blocklist). There is NO "looks too small/empty" quality
+// filter here — that kind of implicit heuristic is exactly what can
+// silently hide a legitimate newly created repo (e.g. one with no
+// description yet) from the showcase, which defeats the point of
+// fetching dynamically. If a repo needs to be hidden, add it to
+// EXCLUDE_SUBSTRINGS in config.js instead of guessing at "triviality".
 function isLikelyRealProject(r) {
   const n = r.name.toLowerCase();
   if (n === GITHUB_USER.toLowerCase()) return false;
   if (EXCLUDE_SUBSTRINGS.some((x) => n.includes(x))) return false;
   if (r.fork) return false;
-  if (!r.description && !r.language && (r.size || 0) < 50) return false;
   return true;
 }
 
@@ -40,13 +45,19 @@ function truncate(str, n) {
 
 /**
  * Builds the portfolio's project list from live GitHub repos.
- * - Filters out the portfolio repo, README-only repos, and forks.
- * - Prioritizes the five named flagship projects, then sorts the rest by
+ * - Filters out the portfolio repo, the profile-README repo, and forks
+ *   only (see isLikelyRealProject) — everything else fetched from
+ *   GitHub shows up automatically, including brand-new repos.
+ * - Prioritizes the named flagship projects, then sorts the rest by
  *   most recently updated.
- * - Detects technologies from real per-repo language-BYTE breakdowns
- *   (not just GitHub's single "primary language" field, which misses
- *   Java on mixed-stack repos), merged with topics and resume-verified
- *   tags for the documented projects.
+ * - Technology detection is evidence-based, not keyword-scraped: real
+ *   per-repo language-BYTE breakdown (every language actually present,
+ *   not just a percentage-gated subset) plus an actual scan of each
+ *   repo's dependency/config files (package.json, pom.xml,
+ *   build.gradle, requirements.txt, Spring application config,
+ *   Docker/CI presence — see techDetector.js), merged with
+ *   resume-verified ground truth for the documented projects. Repo
+ *   topics and description text are never converted into skills.
  */
 export async function buildProjects(repos) {
   const candidateRepos = repos.filter(isLikelyRealProject).sort((a, b) => {
@@ -56,13 +67,21 @@ export async function buildProjects(repos) {
     return new Date(b.pushed_at) - new Date(a.pushed_at);
   });
 
-  // Capped to stay within unauthenticated GitHub rate limits.
+  // Capped to keep the request count sane — each repo here costs one
+  // language-breakdown call plus techDetector's own handful of raw
+  // file fetches (which don't count against the GitHub API rate limit
+  // at all, since they go straight to raw.githubusercontent.com).
   const ENRICH_LIMIT = 15;
   const languageBreakdowns = {};
+  const detectedTech = {};
   await Promise.all(
     candidateRepos.slice(0, ENRICH_LIMIT).map(async (r) => {
-      const breakdown = await getLanguages(r.name);
+      const [breakdown, tech] = await Promise.all([
+        getLanguages(r.name),
+        detectProjectTech(r.name, r.default_branch || "main"),
+      ]);
       if (breakdown) languageBreakdowns[r.name] = breakdown;
+      detectedTech[r.name] = tech;
     }),
   );
 
@@ -70,14 +89,11 @@ export async function buildProjects(repos) {
     const tags = [];
     const breakdown = languageBreakdowns[r.name];
     if (breakdown) {
-      const totalBytes = Object.values(breakdown).reduce((a, b) => a + b, 0) || 1;
-      Object.entries(breakdown).forEach(([lang, bytes]) => {
-        if (bytes / totalBytes >= 0.08) tags.push(lang);
-      });
+      Object.keys(breakdown).forEach((lang) => tags.push(lang));
     } else if (r.language) {
       tags.push(r.language);
     }
-    if (Array.isArray(r.topics)) tags.push(...r.topics);
+    tags.push(...(detectedTech[r.name] || []));
     tags.push(...resumeTagsFor(r.name));
 
     return {
