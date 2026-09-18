@@ -1,5 +1,19 @@
 import { registerPanel, getPanelBody, setPanelTitle, state, render, openProjectDetail } from "./panelSystem.js";
 
+
+const CATEGORY_ORDER = ["Languages", "Backend", "Database", "DevOps", "Others", "Frontend"];
+
+function sortByCategoryOrder(categories) {
+  return [...categories].sort((a, b) => {
+    const ia = CATEGORY_ORDER.indexOf(a);
+    const ib = CATEGORY_ORDER.indexOf(b);
+    if (ia === -1 && ib === -1) return a.localeCompare(b);
+    if (ia === -1) return 1;
+    if (ib === -1) return -1;
+    return ia - ib;
+  });
+}
+
 let skillCatalog = {};
 let projectsRef = [];
 
@@ -18,7 +32,7 @@ function renderSkillsPanel() {
 
   if (state.skillsLevel === "overview") {
     setPanelTitle("Skills");
-    const categories = Object.keys(groups);
+    const categories = sortByCategoryOrder(Object.keys(groups));
     body.innerHTML = `<div class="category-grid">${categories
       .map(
         (cat) => `

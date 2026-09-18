@@ -3,6 +3,8 @@
 // - JS/Node/React repos: booted LIVE in the visitor's own browser tab via
 //   StackBlitz WebContainers. This genuinely clones, installs, and runs
 //   the project's real code — no fabrication, no backend needed.
+// - Plain HTML/CSS repos: no framework, nothing to install or run — shown
+//   directly via a public raw-HTML renderer, no sandbox needed at all.
 // - Any other stack (Java/Spring Boot, Python, etc.): WebContainers can't
 //   run a JVM or other non-Node runtime in-browser. There is no safe way
 //   to fake this, so it calls the /api/preview/* backend contract
@@ -24,6 +26,37 @@ let webcontainerInstance = null;
 
 export function isWebPreviewEligible(project) {
   return project.tags.some((t) => JS_STACK_TAGS.includes(t));
+}
+
+// Plain HTML/CSS (no JS framework, no backend) needs neither WebContainers
+// nor the sandbox backend — there's nothing to install or run. It can be
+// shown directly by pointing an iframe at the file straight from GitHub.
+export function isStaticHtmlEligible(project) {
+  const hasFramework = project.tags.some((t) => JS_STACK_TAGS.includes(t));
+  const hasMarkup = project.tags.includes("HTML") || project.tags.includes("CSS");
+  return hasMarkup && !hasFramework;
+}
+
+// Finds the real index.html in the repo (root or one level of nesting)
+// rather than assuming it's always at the root, then hands it to
+// htmlpreview.github.io, a free public renderer for raw GitHub HTML files
+// (raw.githubusercontent.com itself serves HTML as text/plain, which
+// browsers refuse to render in an iframe).
+export async function getStaticHtmlPreviewUrl(project) {
+  const tree = await getRepoTree(project.id, project.defaultBranch);
+  if (!tree || !Array.isArray(tree.tree)) {
+    throw new Error("Could not read this repository's file tree.");
+  }
+  const candidates = tree.tree
+    .filter((e) => e.type === "blob" && /(^|\/)index\.html$/i.test(e.path))
+    .sort((a, b) => a.path.split("/").length - b.path.split("/").length);
+
+  if (!candidates.length) {
+    throw new Error("No index.html found in this repository.");
+  }
+
+  const rawUrl = rawFileUrl(project.id, project.defaultBranch, candidates[0].path);
+  return `https://htmlpreview.github.io/?${rawUrl}`;
 }
 
 async function loadWebContainerSDK() {

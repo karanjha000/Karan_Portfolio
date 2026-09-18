@@ -1,5 +1,11 @@
 import { registerPanel, getPanelBody, setPanelTitle, state, render } from "./panelSystem.js";
-import { isWebPreviewEligible, runWebPreview, requestBackendPreview } from "../services/previewService.js";
+import {
+  isWebPreviewEligible,
+  runWebPreview,
+  requestBackendPreview,
+  isStaticHtmlEligible,
+  getStaticHtmlPreviewUrl,
+} from "../services/previewService.js";
 
 export let projects = [];
 export let projectsLoaded = false;
@@ -115,7 +121,10 @@ async function runPreview(project, container) {
 
   try {
     let previewUrl;
-    if (isWebPreviewEligible(project)) {
+    if (isStaticHtmlEligible(project)) {
+      setStage("Loading live preview…");
+      previewUrl = await getStaticHtmlPreviewUrl(project);
+    } else if (isWebPreviewEligible(project)) {
       previewUrl = await runWebPreview(project, { onStage: setStage });
     } else {
       previewUrl = await requestBackendPreview(project, { onStage: setStage });
